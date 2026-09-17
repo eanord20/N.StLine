@@ -177,7 +177,7 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <ProgressBar Grid.Row="5" Value="{Binding ProgressValue}" Maximum="100" Height="4" Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
+        <ProgressBar Grid.Row="5" Value="{Binding ProgressValue, Mode=OneWay}" Maximum="100" Height="4" Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
         <TextBlock Grid.Row="6" Text="{Binding StatusText}" FontWeight="Bold" Margin="0,4" />
 
