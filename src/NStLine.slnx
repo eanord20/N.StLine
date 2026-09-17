@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="NStLine.App/NStLine.App.csproj" />
+  <Project Path="NStLine.Core.Tests/NStLine.Core.Tests.csproj" />
+  <Project Path="NStLine.Core/NStLine.Core.csproj" />
+  <Project Path="NStLine.Cutting.Tests/NStLine.Cutting.Tests.csproj" />
+  <Project Path="NStLine.Cutting/NStLine.Cutting.csproj" />
+</Solution>
