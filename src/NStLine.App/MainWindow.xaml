@@ -3,10 +3,171 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:NStLine.App"
+        xmlns:vm="clr-namespace:NStLine.App.ViewModels"
+        xmlns:loc="clr-namespace:NStLine.App.Services"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="{Binding WindowTitle}"
+        Height="720" Width="1280"
+        WindowState="Maximized"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}">
 
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <Style x:Key="ErrorRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasError}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource ErrorRowBrush}" />
+                    <Setter Property="ToolTip" Value="{Binding Error}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="4" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Menu Grid.Row="0">
+            <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuFile}">
+                <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuOpenProject}" Command="{Binding OpenProjectCommand}" />
+                <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuSaveProject}" Command="{Binding SaveProjectCommand}" />
+            </MenuItem>
+            <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuLanguage}">
+                <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuEnglish}" Command="{Binding SetLanguageCommand}" CommandParameter="en" />
+                <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuUkrainian}" Command="{Binding SetLanguageCommand}" CommandParameter="ua" />
+            </MenuItem>
+            <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuTheme}">
+                <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuThemeLight}" Command="{Binding SetThemeCommand}" CommandParameter="Light" />
+                <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuThemeDark}" Command="{Binding SetThemeCommand}" CommandParameter="Dark" />
+            </MenuItem>
+        </Menu>
+
+        <Border Grid.Row="2" Background="{DynamicResource MaterialDesignCardBackground}" BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="1" CornerRadius="6" Padding="8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="6" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="6" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="6" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Row="0" Grid.Column="0" Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding OpenMaterialsCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Layers" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,4,0" />
+                            <TextBlock Text="{Binding ButtonMaterials}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding PasteFromClipboardCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ContentPaste" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,4,0" />
+                            <TextBlock Text="{Binding ButtonPaste}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Row="0" Grid.Column="4" Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding AddRowCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Plus" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,4,0" />
+                            <TextBlock Text="{Binding ButtonAddRow}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Row="2" Grid.Column="0" Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding CalculateCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Play" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0" />
+                            <TextBlock Text="{Binding ButtonCalculate}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Row="2" Grid.Column="2" Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding CopyResultsCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ContentCopy" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,4,0" />
+                            <TextBlock Text="{Binding ButtonCopyResults}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Row="2" Grid.Column="4" Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding ClearAllCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="DeleteSweepOutline" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,4,0" />
+                            <TextBlock Text="{Binding ButtonClear}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <Grid Grid.Column="2" VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="6" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="100" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding LabelMaterial}" VerticalAlignment="Center" />
+                    <ComboBox Grid.Row="0" Grid.Column="2" ItemsSource="{Binding LibraryMaterials}" SelectedItem="{Binding SelectedMaterial}" DisplayMemberPath="Name" Style="{StaticResource AppMaterialComboBoxStyle}" />
+
+                    <TextBlock Grid.Row="0" Grid.Column="4" Text="{Binding LabelBarLength}" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="0" Grid.Column="6" Text="{Binding BarLength, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" />
+
+                    <TextBlock Grid.Row="0" Grid.Column="8" Text="{Binding LabelCutWidth}" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="0" Grid.Column="10" Text="{Binding CutWidth, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" />
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelParts}" FontWeight="Bold" VerticalAlignment="Center" />
+                </Grid>
+            </Grid>
+        </Border>
+
+        <DataGrid Grid.Row="4"
+                  x:Name="PartsGrid"
+                  ItemsSource="{Binding Parts}"
+                  SelectedItem="{Binding SelectedPart}"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  RowStyle="{StaticResource ErrorRowStyle}"
+                  GridLinesVisibility="All"
+                  HorizontalGridLinesBrush="{DynamicResource MaterialDesignDivider}"
+                  VerticalGridLinesBrush="{DynamicResource MaterialDesignDivider}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnSeq}" Binding="{Binding RowNumber}" Width="50" IsReadOnly="True" />
+                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnName}" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnLength}" Binding="{Binding Length, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120" />
+                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnQuantity}" Binding="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="100" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <ProgressBar Grid.Row="5" Value="{Binding ProgressValue}" Maximum="100" Height="4" Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+        <TextBlock Grid.Row="6" Text="{Binding StatusText}" FontWeight="Bold" Margin="0,4" />
     </Grid>
 </Window>
