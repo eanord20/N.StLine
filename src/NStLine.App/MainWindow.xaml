@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:NStLine.App.ViewModels"
         xmlns:loc="clr-namespace:NStLine.App.Services"
+        xmlns:views="clr-namespace:NStLine.App.Views"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
         Title="{Binding WindowTitle}"
@@ -35,6 +36,7 @@
             <RowDefinition Height="4" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <Menu Grid.Row="0">
@@ -169,5 +171,13 @@
         <ProgressBar Grid.Row="5" Value="{Binding ProgressValue}" Maximum="100" Height="4" Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
         <TextBlock Grid.Row="6" Text="{Binding StatusText}" FontWeight="Bold" Margin="0,4" />
+
+        <ContentControl Grid.Row="7" Content="{Binding Result}" Margin="0,8,0,0">
+            <ContentControl.ContentTemplate>
+                <DataTemplate>
+                    <views:ResultPanel />
+                </DataTemplate>
+            </ContentControl.ContentTemplate>
+        </ContentControl>
     </Grid>
 </Window>
