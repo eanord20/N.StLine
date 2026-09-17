@@ -138,10 +138,6 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="8" />
                         <ColumnDefinition Width="100" />
-                        <ColumnDefinition Width="16" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="8" />
-                        <ColumnDefinition Width="100" />
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding LabelMaterial}" VerticalAlignment="Center" />
@@ -149,9 +145,6 @@
 
                     <TextBlock Grid.Row="0" Grid.Column="4" Text="{Binding LabelBarLength}" VerticalAlignment="Center" />
                     <TextBox Grid.Row="0" Grid.Column="6" Text="{Binding BarLength, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" />
-
-                    <TextBlock Grid.Row="0" Grid.Column="8" Text="{Binding LabelCutWidth}" VerticalAlignment="Center" />
-                    <TextBox Grid.Row="0" Grid.Column="10" Text="{Binding CutWidth, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" />
 
                     <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelParts}" FontWeight="Bold" VerticalAlignment="Center" />
                 </Grid>
@@ -169,6 +162,19 @@
                   GridLinesVisibility="All"
                   HorizontalGridLinesBrush="{DynamicResource MaterialDesignDivider}"
                   VerticalGridLinesBrush="{DynamicResource MaterialDesignDivider}">
+            <DataGrid.Resources>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="{DynamicResource MaterialDesignCardBackground}" />
+                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="FontWeight" Value="Bold" />
+                    <Setter Property="Padding" Value="4,4" />
+                </Style>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                    <Setter Property="Background" Value="Transparent" />
+                </Style>
+            </DataGrid.Resources>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnSeq}" Binding="{Binding RowNumber}" Width="50" IsReadOnly="True" />
                 <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnName}" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />

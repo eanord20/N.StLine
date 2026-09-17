@@ -16,9 +16,10 @@ public static class ThemeService
         var dictionaries = Application.Current.Resources.MergedDictionaries;
         dictionaries.Clear();
 
+        var materialTheme = theme == AppTheme.Dark ? "Dark" : "Light";
         dictionaries.Add(new ResourceDictionary
         {
-            Source = new Uri("pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml")
+            Source = new Uri($"pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.{materialTheme}.xaml")
         });
         dictionaries.Add(new ResourceDictionary
         {

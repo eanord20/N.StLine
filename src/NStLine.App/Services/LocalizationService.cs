@@ -57,6 +57,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
     public string ButtonDeleteRow => this["ButtonDeleteRow"];
     public string ButtonAdd => this["ButtonAdd"];
     public string ButtonDelete => this["ButtonDelete"];
+    public string ButtonCopy => this["ButtonCopy"];
     public string ButtonOk => this["ButtonOk"];
     public string ButtonCancel => this["ButtonCancel"];
     public string ButtonMoveToTask => this["ButtonMoveToTask"];
@@ -70,6 +71,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
     public string ColumnSeq => this["ColumnSeq"];
     public string ColumnName => this["ColumnName"];
     public string ColumnLength => this["ColumnLength"];
+    public string ColumnCutWidth => this["ColumnCutWidth"];
     public string ColumnQuantity => this["ColumnQuantity"];
     public string StatusOptimal => this["StatusOptimal"];
     public string StatusBestFound => this["StatusBestFound"];
@@ -109,6 +111,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["ButtonDeleteRow"] = "Delete row",
             ["ButtonAdd"] = "Add",
             ["ButtonDelete"] = "Delete",
+            ["ButtonCopy"] = "Copy",
             ["ButtonOk"] = "OK",
             ["ButtonCancel"] = "Cancel",
             ["ButtonMoveToTask"] = "Add to task >",
@@ -122,6 +125,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["ColumnSeq"] = "#",
             ["ColumnName"] = "Name",
             ["ColumnLength"] = "Length, mm",
+            ["ColumnCutWidth"] = "Cut width, mm",
             ["ColumnQuantity"] = "Quantity",
             ["StatusOptimal"] = "Optimal solution",
             ["StatusBestFound"] = "Best found solution",
@@ -160,6 +164,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["ButtonDeleteRow"] = "Видалити рядок",
             ["ButtonAdd"] = "Додати",
             ["ButtonDelete"] = "Видалити",
+            ["ButtonCopy"] = "Копіювати",
             ["ButtonOk"] = "OK",
             ["ButtonCancel"] = "Скасувати",
             ["ButtonMoveToTask"] = "Додати в задачу >",
@@ -173,6 +178,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["ColumnSeq"] = "№",
             ["ColumnName"] = "Назва",
             ["ColumnLength"] = "Довжина, мм",
+            ["ColumnCutWidth"] = "Ширина різу, мм",
             ["ColumnQuantity"] = "Кількість",
             ["StatusOptimal"] = "Оптимальне рішення",
             ["StatusBestFound"] = "Найкращий знайдений варіант",

@@ -29,6 +29,8 @@
     <SolidColorBrush x:Key="AppInputDropDownBackgroundBrush" Color="{StaticResource AppInputDropDownBackgroundColor}" />
     <SolidColorBrush x:Key="MaterialDesignBody" Color="{StaticResource AppMenuForegroundColor}" />
     <SolidColorBrush x:Key="MaterialDesignTextBoxBackground" Color="{StaticResource AppInputBackgroundColor}" />
+    <SolidColorBrush x:Key="MaterialDesignCardBackground" Color="{StaticResource AppInputBackgroundColor}" />
+    <SolidColorBrush x:Key="MaterialDesignDivider" Color="#E0E0E0" />
 
     <SolidColorBrush x:Key="SubMenuBackgroundBrush" Color="{StaticResource AppMenuBackgroundColor}" />
     <SolidColorBrush x:Key="Menu.Static.Background" Color="{StaticResource AppMenuBackgroundColor}" />

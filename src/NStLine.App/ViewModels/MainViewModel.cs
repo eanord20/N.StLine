@@ -82,8 +82,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             _selectedMaterial = value;
             OnPropertyChanged();
-            if (value != null && _barLength <= 0)
-                BarLength = value.StandardLength;
+            if (value != null)
+            {
+                CutWidth = value.CutWidth;
+                if (_barLength <= 0)
+                    BarLength = value.StandardLength;
+            }
             CommandManager.InvalidateRequerySuggested();
         }
     }
@@ -214,7 +218,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void AddRow()
     {
-        Parts.Add(new PartRow { RowNumber = Parts.Count + 1, Quantity = 1 });
+        var number = Parts.Count + 1;
+        Parts.Add(new PartRow { Name = $"Part {number}", RowNumber = number, Quantity = 1 });
         RenumberRows();
     }
 
@@ -261,7 +266,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
                 var row = new PartRow
                 {
-                    Name = name,
+                    Name = string.IsNullOrWhiteSpace(name) ? $"Part {Parts.Count + 1}" : name,
                     Length = length,
                     Quantity = Math.Max(1, quantity),
                     RowNumber = Parts.Count + 1

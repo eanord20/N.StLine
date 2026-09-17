@@ -3,9 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:models="clr-namespace:NStLine.Core.Models;assembly=NStLine.Core"
+             xmlns:conv="clr-namespace:NStLine.App.Converters"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <conv:BarPartsSummaryConverter x:Key="BarPartsSummaryConverter" />
+    </UserControl.Resources>
 
     <Grid Margin="0,8,0,0">
         <Grid.RowDefinitions>
@@ -35,18 +39,30 @@
                   GridLinesVisibility="All"
                   HorizontalGridLinesBrush="{DynamicResource MaterialDesignDivider}"
                   VerticalGridLinesBrush="{DynamicResource MaterialDesignDivider}">
+            <DataGrid.Resources>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="{DynamicResource MaterialDesignCardBackground}" />
+                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="FontWeight" Value="Bold" />
+                    <Setter Property="Padding" Value="4,4" />
+                </Style>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                    <Setter Property="Background" Value="Transparent" />
+                </Style>
+            </DataGrid.Resources>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="#" Binding="{Binding Index}" Width="40" />
                 <DataGridTextColumn Header="Cuts" Binding="{Binding CutCount}" Width="50" />
                 <DataGridTextColumn Header="Cut loss" Binding="{Binding CutLoss, StringFormat='{}{0:F1}'}" Width="70" />
-                <DataGridTextColumn Header="Parts" Width="*">
-                    <DataGridTextColumn.Binding>
-                        <MultiBinding StringFormat="{}{0}×{1:F0}">
-                            <Binding Path="Parts.Count" />
-                            <Binding Path="Parts[0].Source.Length" />
-                        </MultiBinding>
-                    </DataGridTextColumn.Binding>
-                </DataGridTextColumn>
+                <DataGridTemplateColumn Header="Parts" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Converter={StaticResource BarPartsSummaryConverter}}" VerticalAlignment="Center" Padding="4,0" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Remainder" Binding="{Binding Remainder, StringFormat='{}{0:F1}'}" Width="80" />
             </DataGrid.Columns>
         </DataGrid>

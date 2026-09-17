@@ -3,18 +3,42 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:loc="clr-namespace:NStLine.App.Services"
         Title="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MaterialsWindowTitle}"
-        Height="500" Width="600"
+        Height="500" Width="650"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource WindowBackgroundBrush}"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}">
+    <Window.Resources>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="{DynamicResource MaterialDesignCardBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Padding" Value="4,4" />
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+    </Window.Resources>
+
     <Grid Margin="8">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="4" />
             <RowDefinition Height="*" />
             <RowDefinition Height="8" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <DataGrid Grid.Row="0"
+        <ToolBarTray Grid.Row="0" Background="Transparent">
+            <ToolBar Background="Transparent">
+                <Button Style="{StaticResource AppButtonStyle}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonAdd}" Command="{Binding AddCommand}" Width="90" />
+                <Button Style="{StaticResource AppButtonStyle}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonDelete}" Command="{Binding DeleteCommand}" Width="90" Margin="6,0,0,0" />
+                <Button Style="{StaticResource AppButtonStyle}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonCopy}" Command="{Binding CopyCommand}" Width="90" Margin="6,0,0,0" />
+            </ToolBar>
+        </ToolBarTray>
+
+        <DataGrid Grid.Row="2"
                   ItemsSource="{Binding Materials}"
                   SelectedItem="{Binding SelectedMaterial}"
                   AutoGenerateColumns="False"
@@ -25,18 +49,14 @@
                   VerticalGridLinesBrush="{DynamicResource MaterialDesignDivider}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnName}" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
-                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnLength}" Binding="{Binding StandardLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="150" />
+                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnLength}" Binding="{Binding StandardLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120" />
+                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnCutWidth}" Binding="{Binding CutWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120" />
             </DataGrid.Columns>
         </DataGrid>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left">
-            <Button Style="{StaticResource AppButtonStyle}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonAdd}" Command="{Binding AddCommand}" Margin="0,0,6,0" />
-            <Button Style="{StaticResource AppButtonStyle}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonDelete}" Command="{Binding DeleteCommand}" />
-        </StackPanel>
-
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Style="{StaticResource AppButtonStyle}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonOk}" Command="{Binding OkCommand}" IsDefault="True" Margin="0,0,6,0" Click="Ok_Click" />
-            <Button Style="{StaticResource AppButtonStyle}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonCancel}" Command="{Binding CancelCommand}" IsCancel="True" Click="Cancel_Click" />
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Style="{StaticResource AppButtonStyle}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonOk}" Command="{Binding OkCommand}" IsDefault="True" Click="Ok_Click" />
+            <Button Style="{StaticResource AppButtonStyle}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonCancel}" Command="{Binding CancelCommand}" IsCancel="True" Margin="6,0,0,0" Click="Cancel_Click" />
         </StackPanel>
     </Grid>
 </Window>
