@@ -20,7 +20,7 @@ Priority:
 - UI: WPF
 - Theme: MaterialDesignThemes.Wpf 4.9.0
 - Serialization: System.Text.Json
-- Reports: Xceed.Document.NET (DocX)
+- Reports: DocX 5.0.0
 - Target OS: Windows 10/11
 
 ---
@@ -82,11 +82,11 @@ Business logic must never depend on WPF. The calculation engine is independent a
 
 ```powershell
 # Build
- dotnet build src/NStLine.sln
+ dotnet build src/NStLine.slnx
 
-# Tests
- dotnet test src/NStLine.Core.Tests/NStLine.Core.Tests.csproj
- dotnet test src/NStLine.Cutting.Tests/NStLine.Cutting.Tests.csproj
+# Release build + tests
+ dotnet build src/NStLine.slnx -c Release
+ dotnet test src/NStLine.slnx -c Release
 
 # Run
  dotnet run --project src/NStLine.App/NStLine.App.csproj
