@@ -15,7 +15,12 @@ public partial class App : Application
 
         var mainWindow = new MainWindow
         {
-            DataContext = new ViewModels.MainViewModel(new Cutting.Services.CuttingEngine())
+            DataContext = new ViewModels.MainViewModel(
+                new Cutting.Services.CuttingEngine(),
+                new MaterialsLibraryService(),
+                new ProjectFileService(),
+                new AppSettingsService(),
+                new ReportService())
         };
         mainWindow.Show();
     }

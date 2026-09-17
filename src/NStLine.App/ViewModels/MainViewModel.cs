@@ -13,6 +13,8 @@ using NStLine.Core.Contracts;
 using NStLine.Core.Models;
 using Clipboard = System.Windows.Clipboard;
 using MessageBox = System.Windows.MessageBox;
+using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 namespace NStLine.App.ViewModels;
 
@@ -21,6 +23,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly LocalizationService _localization = LocalizationService.Instance;
     private readonly IMaterialsLibraryService _materialsLibraryService;
     private readonly IProjectFileService? _projectFileService;
+    private readonly IAppSettingsService _appSettingsService;
+    private readonly IReportService? _reportService;
     private readonly ICuttingEngine _cuttingEngine;
 
     private LinearMaterial? _selectedMaterial;
@@ -31,20 +35,26 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private double _progressValue;
     private bool _isBusy;
     private PartRow? _selectedPart;
+    private AppTheme _currentTheme = AppTheme.Light;
 
     public MainViewModel(ICuttingEngine cuttingEngine,
                          IMaterialsLibraryService? materialsLibraryService = null,
-                         IProjectFileService? projectFileService = null)
+                         IProjectFileService? projectFileService = null,
+                         IAppSettingsService? appSettingsService = null,
+                         IReportService? reportService = null)
     {
         _cuttingEngine = cuttingEngine;
         _materialsLibraryService = materialsLibraryService ?? new MaterialsLibraryService();
         _projectFileService = projectFileService;
+        _appSettingsService = appSettingsService ?? new AppSettingsService();
+        _reportService = reportService;
 
         AddRowCommand = new RelayCommand(_ => AddRow());
         DeleteRowCommand = new RelayCommand(_ => DeleteRow(), _ => SelectedPart != null);
         PasteFromClipboardCommand = new RelayCommand(_ => PasteFromClipboard());
         CalculateCommand = new RelayCommand(async _ => await CalculateAsync(), _ => CanCalculate());
         CopyResultsCommand = new RelayCommand(_ => CopyResults(), _ => Result != null);
+        ExportDocxCommand = new RelayCommand(_ => ExportDocx(), _ => Result != null && _reportService != null);
         OpenMaterialsCommand = new RelayCommand(_ => OpenMaterials());
         ClearAllCommand = new RelayCommand(_ => ClearAll(), _ => Parts.Count > 0 || Result != null);
         SaveProjectCommand = new RelayCommand(_ => SaveProject(), _ => CanSaveProject());
@@ -57,6 +67,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         });
 
         LoadLibrary();
+        LoadSettings();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -150,6 +161,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ICommand PasteFromClipboardCommand { get; }
     public ICommand CalculateCommand { get; }
     public ICommand CopyResultsCommand { get; }
+    public ICommand ExportDocxCommand { get; }
     public ICommand OpenMaterialsCommand { get; }
     public ICommand ClearAllCommand { get; }
     public ICommand SaveProjectCommand { get; }
@@ -162,6 +174,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public string ButtonPaste => _localization.ButtonPaste;
     public string ButtonCalculate => _localization.ButtonCalculate;
     public string ButtonCopyResults => _localization.ButtonCopyResults;
+    public string ButtonExportDocx => _localization.ButtonExportDocx;
     public string ButtonClear => _localization.ButtonClear;
     public string ButtonAddRow => _localization.ButtonAddRow;
     public string LabelMaterial => _localization.LabelMaterial;
@@ -176,6 +189,27 @@ public sealed class MainViewModel : INotifyPropertyChanged
         LibraryMaterials.Clear();
         foreach (var material in materials)
             LibraryMaterials.Add(material);
+    }
+
+    private void LoadSettings()
+    {
+        var settings = _appSettingsService.Load();
+        _localization.Culture = settings.Culture;
+        if (Enum.TryParse<AppTheme>(settings.Theme, true, out var theme))
+        {
+            _currentTheme = theme;
+            ThemeService.Apply(theme);
+        }
+        OnPropertyChanged(string.Empty);
+    }
+
+    private void SaveSettings()
+    {
+        _appSettingsService.Save(new AppSettings
+        {
+            Culture = _localization.Culture,
+            Theme = _currentTheme.ToString()
+        });
     }
 
     private void AddRow()
@@ -331,6 +365,32 @@ public sealed class MainViewModel : INotifyPropertyChanged
         Clipboard.SetText(sb.ToString());
     }
 
+    private void ExportDocx()
+    {
+        if (Result == null || _reportService == null || SelectedMaterial == null)
+            return;
+
+        var dialog = new SaveFileDialog
+        {
+            Filter = "DOCX document (*.docx)|*.docx",
+            DefaultExt = ".docx"
+        };
+
+        if (dialog.ShowDialog() != true)
+            return;
+
+        var task = new CuttingTask
+        {
+            Material = SelectedMaterial,
+            BarLength = BarLength,
+            CutWidth = CutWidth,
+            Parts = Parts.Select(p => p.ToPartRequirement()).ToList()
+        };
+
+        _reportService.GenerateReport(dialog.FileName, task, Result);
+        StatusText = $"Report saved: {dialog.FileName}";
+    }
+
     private void OpenMaterials()
     {
         var dialog = new Views.MaterialsWindow(LibraryMaterials)
@@ -363,12 +423,66 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void SaveProject()
     {
-        // Placeholder: implemented in Phase 5.
+        if (_projectFileService == null)
+            return;
+
+        var dialog = new SaveFileDialog
+        {
+            Filter = $"N.StLine project (*{AppConstants.ProjectFileExtension})|*{AppConstants.ProjectFileExtension}",
+            DefaultExt = AppConstants.ProjectFileExtension
+        };
+
+        if (dialog.ShowDialog() != true)
+            return;
+
+        var data = new ProjectData
+        {
+            Material = SelectedMaterial,
+            BarLength = BarLength,
+            CutWidth = CutWidth,
+            Parts = Parts.Select(p => p.ToPartRequirement()).ToList()
+        };
+
+        _projectFileService.Save(dialog.FileName, data);
+        StatusText = $"Project saved: {dialog.FileName}";
     }
 
     private void OpenProject()
     {
-        // Placeholder: implemented in Phase 5.
+        if (_projectFileService == null)
+            return;
+
+        var dialog = new OpenFileDialog
+        {
+            Filter = $"N.StLine project (*{AppConstants.ProjectFileExtension})|*{AppConstants.ProjectFileExtension}",
+            DefaultExt = AppConstants.ProjectFileExtension
+        };
+
+        if (dialog.ShowDialog() != true)
+            return;
+
+        var data = _projectFileService.Load(dialog.FileName);
+        LoadProject(data);
+        StatusText = $"Project loaded: {dialog.FileName}";
+    }
+
+    private void LoadProject(ProjectData data)
+    {
+        SelectedMaterial = LibraryMaterials.FirstOrDefault(m => m.Id == data.Material?.Id) ?? data.Material;
+        BarLength = data.BarLength;
+        CutWidth = data.CutWidth;
+
+        Parts.Clear();
+        if (data.Parts != null)
+        {
+            for (int i = 0; i < data.Parts.Count; i++)
+            {
+                Parts.Add(PartRow.FromPartRequirement(data.Parts[i], i + 1));
+            }
+        }
+
+        Result = null;
+        ValidateParts();
     }
 
     private void SetLanguage(string? culture)
@@ -378,11 +492,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         _localization.Culture = culture;
         OnPropertyChanged(string.Empty);
+        SaveSettings();
     }
 
     private void SetTheme(AppTheme theme)
     {
+        _currentTheme = theme;
         ThemeService.Apply(theme);
+        SaveSettings();
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
