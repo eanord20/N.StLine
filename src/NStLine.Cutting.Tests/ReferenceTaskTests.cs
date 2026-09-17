@@ -111,6 +111,21 @@ public class ReferenceTaskTests
     }
 
     [Fact]
+    public void UnnamedParts_DoesNotCrash()
+    {
+        var task = Task(6000, 3,
+            ("", 1000, 2),
+            ("", 850, 3),
+            ("", 1200, 1),
+            ("", 1500, 2),
+            ("", 500, 4));
+
+        var result = Engine.Solve(task, Options());
+
+        Assert.True(result.TotalBarCount > 0);
+    }
+
+    [Fact]
     public void ManySmallParts_UsesFallbackOrCompletes()
     {
         var task = Task(6000, 3,
