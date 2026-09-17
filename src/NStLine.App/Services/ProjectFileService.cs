@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using NStLine.App.Models;
+using NStLine.Core.Models;
 
 namespace NStLine.App.Services;
 
@@ -17,7 +18,35 @@ public sealed class ProjectFileService : IProjectFileService
     public ProjectData Load(string path)
     {
         var json = File.ReadAllText(path);
-        var data = JsonSerializer.Deserialize<ProjectData>(json, _jsonOptions);
-        return data ?? throw new InvalidOperationException("Project file is empty or invalid.");
+        var data = JsonSerializer.Deserialize<ProjectData>(json, _jsonOptions)
+            ?? throw new InvalidOperationException("Project file is empty or invalid.");
+
+        MigrateLegacyProject(data);
+        return data;
+    }
+
+    private static void MigrateLegacyProject(ProjectData data)
+    {
+        if (data.Materials.Count == 0 && data.Material != null)
+        {
+            var material = new LinearMaterial
+            {
+                Id = data.Material.Id,
+                Name = data.Material.Name,
+                StandardLength = data.BarLength > 0 ? data.BarLength : data.Material.StandardLength,
+                CutWidth = data.CutWidth > 0 ? data.CutWidth : data.Material.CutWidth
+            };
+            data.Materials.Add(material);
+        }
+
+        if (data.Materials.Count == 1)
+        {
+            foreach (var part in data.Parts.Where(x => string.IsNullOrWhiteSpace(x.MaterialId)))
+                part.MaterialId = data.Materials[0].Id;
+        }
+
+        data.Material = null;
+        data.BarLength = 0;
+        data.CutWidth = 0;
     }
 }

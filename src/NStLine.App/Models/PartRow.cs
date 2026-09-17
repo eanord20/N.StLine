@@ -7,6 +7,7 @@ namespace NStLine.App.Models;
 public sealed class PartRow : INotifyPropertyChanged
 {
     private int _rowNumber;
+    private string _materialId = string.Empty;
     private string _name = string.Empty;
     private double _length;
     private int _quantity = 1;
@@ -18,6 +19,12 @@ public sealed class PartRow : INotifyPropertyChanged
     {
         get => _rowNumber;
         set { _rowNumber = value; OnPropertyChanged(); }
+    }
+
+    public string MaterialId
+    {
+        get => _materialId;
+        set { _materialId = value ?? string.Empty; OnPropertyChanged(); }
     }
 
     public string Name
@@ -60,6 +67,7 @@ public sealed class PartRow : INotifyPropertyChanged
     {
         return new PartRequirement
         {
+            MaterialId = MaterialId,
             Name = Name,
             Length = Length,
             Quantity = Quantity
@@ -70,6 +78,7 @@ public sealed class PartRow : INotifyPropertyChanged
     {
         return new PartRow
         {
+            MaterialId = part.MaterialId,
             Name = part.Name,
             Length = part.Length,
             Quantity = part.Quantity,
