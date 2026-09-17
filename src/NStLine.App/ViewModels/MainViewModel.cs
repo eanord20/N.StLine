@@ -402,10 +402,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             var updated = dialog.ViewModel.Materials;
             _materialsLibraryService.SaveAll(updated);
+
+            var previousId = SelectedMaterial?.Id;
             LoadLibrary();
 
-            if (SelectedMaterial != null && !LibraryMaterials.Any(m => m.Id == SelectedMaterial.Id))
-                SelectedMaterial = null;
+            SelectedMaterial = previousId != null
+                ? LibraryMaterials.FirstOrDefault(m => m.Id == previousId)
+                : null;
         }
     }
 

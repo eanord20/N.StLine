@@ -14,15 +14,6 @@ public partial class MaterialsWindow : Window
         InitializeComponent();
         ViewModel = new MaterialsViewModel(materials);
         DataContext = ViewModel;
-
-        ViewModel.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName == nameof(MaterialsViewModel.DialogResult) && ViewModel.DialogResult.HasValue)
-            {
-                DialogResult = ViewModel.DialogResult.Value;
-                Close();
-            }
-        };
     }
 
     private void Ok_Click(object sender, RoutedEventArgs e)
