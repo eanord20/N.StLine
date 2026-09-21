@@ -23,19 +23,21 @@
         <StackPanel Grid.Row="0">
             <TextBlock Text="{Binding Material.Name}" FontSize="16" FontWeight="SemiBold" />
             <TextBlock Opacity="0.72">
+                <Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelBarLength}" />
+                <Run Text=": " />
                 <Run Text="{Binding Material.StandardLength, StringFormat='{}{0:0.##} mm'}" />
                 <Run Text="  ·  " />
-                <Run Text="{Binding Material.CutWidth, StringFormat='cut {0:0.##} mm'}" />
-                <Run Text="  ·  " />
-                <Run Text="{Binding Result.Method}" />
+                <Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelCutWidth}" />
+                <Run Text=": " />
+                <Run Text="{Binding Material.CutWidth, StringFormat='{}{0:0.##} mm'}" />
             </TextBlock>
         </StackPanel>
 
         <WrapPanel Grid.Row="2">
-            <TextBlock Text="{Binding Result.TotalBarCount, StringFormat='Bars: {0}'}" Margin="0,0,18,0" />
-            <TextBlock Text="{Binding Result.TotalCutLoss, StringFormat='Cut loss: {0:0.##}'}" Margin="0,0,18,0" />
-            <TextBlock Text="{Binding Result.TotalRemainder, StringFormat='Remainder: {0:0.##}'}" Margin="0,0,18,0" />
-            <TextBlock Text="{Binding Result.UtilizationPercent, StringFormat='Utilization: {0:0.##}%'}" />
+            <TextBlock Margin="0,0,18,0"><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTotalBars}" /><Run Text=": " /><Run Text="{Binding Result.TotalBarCount}" /></TextBlock>
+            <TextBlock Margin="0,0,18,0"><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTotalCutLoss}" /><Run Text=": " /><Run Text="{Binding Result.TotalCutLoss, StringFormat='{}{0:0.##}'}" /></TextBlock>
+            <TextBlock Margin="0,0,18,0"><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTotalRemainder}" /><Run Text=": " /><Run Text="{Binding Result.TotalRemainder, StringFormat='{}{0:0.##}'}" /></TextBlock>
+            <TextBlock><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelUtilization}" /><Run Text=": " /><Run Text="{Binding Result.UtilizationPercent, StringFormat='{}{0:0.##}%'}" /></TextBlock>
         </WrapPanel>
 
         <DataGrid Grid.Row="4"

@@ -120,7 +120,7 @@
                                         <TextBlock Margin="7,0,0,0" Opacity="0.7">
                                             <Run Text="{Binding StandardLength, StringFormat='{}{0:0.##} mm'}" />
                                             <Run Text=" · " />
-                                            <Run Text="{Binding CutWidth, StringFormat='cut {0:0.##}'}" />
+                                            <Run Text="{Binding CutWidth, StringFormat='{}{0:0.##} mm'}" />
                                         </TextBlock>
                                         <Button Command="{Binding DataContext.RemoveMaterialCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                 CommandParameter="{Binding Id}" ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TooltipRemoveMaterial}"
