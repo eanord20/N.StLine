@@ -1,4 +1,6 @@
 using System.IO;
+using System.IO.Compression;
+using System.Xml.Linq;
 using NStLine.App.Services;
 using NStLine.Core.Models;
 using Xceed.Words.NET;
@@ -31,6 +33,19 @@ public sealed class ReportServiceTests
             Assert.Contains("Angle", text);
             Assert.Contains("Stand - 1250", text);
             Assert.Contains("Brace - 850", text);
+
+            using var archive = ZipFile.OpenRead(path);
+            using var stream = archive.GetEntry("word/document.xml")!.Open();
+            var xml = XDocument.Load(stream);
+            XNamespace word = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+            var textRuns = xml.Descendants(word + "r").Where(run => run.Descendants(word + "t").Any()).ToList();
+            Assert.NotEmpty(textRuns);
+            Assert.All(textRuns, run =>
+            {
+                var fonts = run.Element(word + "rPr")?.Element(word + "rFonts");
+                Assert.Equal("Calibri", fonts?.Attribute(word + "ascii")?.Value);
+                Assert.Equal("Calibri", fonts?.Attribute(word + "hAnsi")?.Value);
+            });
         }
         finally
         {

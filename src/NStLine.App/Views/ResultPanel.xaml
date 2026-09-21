@@ -23,21 +23,21 @@
         <StackPanel Grid.Row="0">
             <TextBlock Text="{Binding Material.Name}" FontSize="16" FontWeight="SemiBold" />
             <TextBlock Opacity="0.72">
-                <Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelBarLength}" />
+                <Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelBarLength, Mode=OneWay}" />
                 <Run Text=": " />
-                <Run Text="{Binding Material.StandardLength, StringFormat='{}{0:0.##} mm'}" />
+                <Run Text="{Binding Material.StandardLength, StringFormat='{}{0:0.##} mm', Mode=OneWay}" />
                 <Run Text="  ·  " />
-                <Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelCutWidth}" />
+                <Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelCutWidth, Mode=OneWay}" />
                 <Run Text=": " />
-                <Run Text="{Binding Material.CutWidth, StringFormat='{}{0:0.##} mm'}" />
+                <Run Text="{Binding Material.CutWidth, StringFormat='{}{0:0.##} mm', Mode=OneWay}" />
             </TextBlock>
         </StackPanel>
 
         <WrapPanel Grid.Row="2">
-            <TextBlock Margin="0,0,18,0"><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTotalBars}" /><Run Text=": " /><Run Text="{Binding Result.TotalBarCount}" /></TextBlock>
-            <TextBlock Margin="0,0,18,0"><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTotalCutLoss}" /><Run Text=": " /><Run Text="{Binding Result.TotalCutLoss, StringFormat='{}{0:0.##}'}" /></TextBlock>
-            <TextBlock Margin="0,0,18,0"><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTotalRemainder}" /><Run Text=": " /><Run Text="{Binding Result.TotalRemainder, StringFormat='{}{0:0.##}'}" /></TextBlock>
-            <TextBlock><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelUtilization}" /><Run Text=": " /><Run Text="{Binding Result.UtilizationPercent, StringFormat='{}{0:0.##}%'}" /></TextBlock>
+            <TextBlock Margin="0,0,18,0"><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTotalBars, Mode=OneWay}" /><Run Text=": " /><Run Text="{Binding Result.TotalBarCount, Mode=OneWay}" /></TextBlock>
+            <TextBlock Margin="0,0,18,0"><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTotalCutLoss, Mode=OneWay}" /><Run Text=": " /><Run Text="{Binding Result.TotalCutLoss, StringFormat='{}{0:0.##}', Mode=OneWay}" /></TextBlock>
+            <TextBlock Margin="0,0,18,0"><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTotalRemainder, Mode=OneWay}" /><Run Text=": " /><Run Text="{Binding Result.TotalRemainder, StringFormat='{}{0:0.##}', Mode=OneWay}" /></TextBlock>
+            <TextBlock><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelUtilization, Mode=OneWay}" /><Run Text=": " /><Run Text="{Binding Result.UtilizationPercent, StringFormat='{}{0:0.##}%', Mode=OneWay}" /></TextBlock>
         </WrapPanel>
 
         <DataGrid Grid.Row="4"

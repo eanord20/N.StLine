@@ -43,6 +43,45 @@ public sealed class MainViewModelUndoTests
         Assert.Equal(1000, Assert.Single(viewModel.Parts).Length);
     }
 
+    [Fact]
+    public void QuantityCommandsAreUndoableAndDoNotDecreaseBelowOne()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.AddRowCommand.Execute(null);
+        var row = Assert.Single(viewModel.Parts);
+        viewModel.ClearUndoHistory();
+
+        viewModel.DecreaseQuantityCommand.Execute(row);
+        Assert.Equal(1, row.Quantity);
+        Assert.False(viewModel.UndoCommand.CanExecute(null));
+
+        viewModel.IncreaseQuantityCommand.Execute(row);
+        Assert.Equal(2, row.Quantity);
+
+        viewModel.UndoCommand.Execute(null);
+        Assert.Equal(1, Assert.Single(viewModel.Parts).Quantity);
+    }
+
+    [Fact]
+    public void UndoRestoresMaterialChangedDuringCellEdit()
+    {
+        var viewModel = CreateViewModel();
+        var second = new LinearMaterial { Id = "second", Name = "Angle", StandardLength = 6000, CutWidth = 3 };
+        viewModel.LibraryMaterials.Add(second);
+        viewModel.AddMaterialCommand.Execute(second);
+        viewModel.SetActiveMaterialCommand.Execute("material");
+        viewModel.AddRowCommand.Execute(null);
+        var row = Assert.Single(viewModel.Parts);
+        viewModel.ClearUndoHistory();
+
+        viewModel.BeginPartEdit();
+        row.MaterialId = "second";
+        viewModel.CommitPartEdit();
+        viewModel.UndoCommand.Execute(null);
+
+        Assert.Equal("material", Assert.Single(viewModel.Parts).MaterialId);
+    }
+
     private static MainViewModel CreateViewModel()
     {
         var material = new LinearMaterial

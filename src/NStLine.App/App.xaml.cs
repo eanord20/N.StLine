@@ -31,7 +31,7 @@ public partial class App : Application
                 new MaterialsLibraryService(),
                 new ProjectFileService(),
                 new AppSettingsService(),
-                new ResultWindowService(reportService))
+                reportService)
         };
         mainWindow.Show();
     }

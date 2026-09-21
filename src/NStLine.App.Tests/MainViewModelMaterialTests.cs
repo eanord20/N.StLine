@@ -9,7 +9,7 @@ namespace NStLine.App.Tests;
 public sealed class MainViewModelMaterialTests
 {
     [Fact]
-    public void NewRowsBelongToActiveMaterialAndActivePartsAreFiltered()
+    public void NewRowsBelongToActiveMaterialAndRemainInSingleList()
     {
         var first = Material("first", "Tube");
         var second = Material("second", "Angle");
@@ -21,12 +21,32 @@ public sealed class MainViewModelMaterialTests
         viewModel.AddRowCommand.Execute(null);
 
         Assert.Equal("second", viewModel.ActiveMaterialId);
-        Assert.Equal("second", Assert.Single(viewModel.ActiveParts).MaterialId);
+        Assert.Equal(["first", "second"], viewModel.Parts.Select(row => row.MaterialId));
+        Assert.Equal([1, 2], viewModel.Parts.Select(row => row.RowNumber));
 
         viewModel.SetActiveMaterialCommand.Execute("first");
 
-        Assert.Equal("first", Assert.Single(viewModel.ActiveParts).MaterialId);
         Assert.Equal(2, viewModel.Parts.Count);
+    }
+
+    [Fact]
+    public void ChangingMaterialRevalidatesPartAgainstNewBarLength()
+    {
+        var first = Material("first", "Tube");
+        var second = Material("second", "Angle");
+        second.StandardLength = 900;
+        var viewModel = CreateViewModel(first, second);
+        viewModel.AddMaterialCommand.Execute(first);
+        viewModel.AddMaterialCommand.Execute(second);
+        viewModel.SetActiveMaterialCommand.Execute("first");
+        viewModel.AddRowCommand.Execute(null);
+        var row = Assert.Single(viewModel.Parts);
+        row.Length = 1000;
+
+        row.MaterialId = "second";
+
+        Assert.True(row.HasError);
+        Assert.False(viewModel.CalculateCommand.CanExecute(null));
     }
 
     [Fact]

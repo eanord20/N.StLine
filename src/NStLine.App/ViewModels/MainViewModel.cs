@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -6,6 +7,7 @@ using System.Windows;
 using System.Windows.Input;
 using Application = System.Windows.Application;
 using NStLine.App.Commands;
+using NStLine.App.Formatters;
 using NStLine.App.Models;
 using NStLine.App.Services;
 using NStLine.Core.Constants;
@@ -27,8 +29,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly IProjectFileService? _projectFileService;
     private readonly IAppSettingsService _appSettingsService;
     private readonly IProjectCuttingEngine _cuttingEngine;
-    private readonly IResultWindowService? _resultWindowService;
+    private readonly IReportService? _reportService;
     private readonly PartRowsUndoHistory _undoHistory = new(MaxUndoDepth);
+    private readonly HashSet<PartRow> _trackedRows = new();
 
     private string? _activeMaterialId;
     private string _statusText = string.Empty;
@@ -37,19 +40,24 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private PartRow? _selectedPart;
     private AppTheme _currentTheme = AppTheme.Light;
     private PartRowsSnapshot? _pendingEditSnapshot;
+    private ProjectCuttingTask? _currentTask;
+    private ProjectCuttingResult? _currentResult;
+    private bool _isCurrentResultStale;
+    private string _reportOutputPath = string.Empty;
 
     public MainViewModel(
         IProjectCuttingEngine cuttingEngine,
         IMaterialsLibraryService? materialsLibraryService = null,
         IProjectFileService? projectFileService = null,
         IAppSettingsService? appSettingsService = null,
-        IResultWindowService? resultWindowService = null)
+        IReportService? reportService = null)
     {
         _cuttingEngine = cuttingEngine;
         _materialsLibraryService = materialsLibraryService ?? new MaterialsLibraryService();
         _projectFileService = projectFileService;
         _appSettingsService = appSettingsService ?? new AppSettingsService();
-        _resultWindowService = resultWindowService;
+        _reportService = reportService;
+        Parts.CollectionChanged += OnPartsCollectionChanged;
 
         AddRowCommand = new RelayCommand(_ => AddRow(), _ => ActiveMaterial != null);
         DeleteRowCommand = new RelayCommand(
@@ -62,6 +70,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
         AddMaterialCommand = new RelayCommand(AddMaterial, material => material is LinearMaterial);
         RemoveMaterialCommand = new RelayCommand(RemoveMaterial, id => id is string);
         SetActiveMaterialCommand = new RelayCommand(SetActiveMaterial, id => id is string);
+        IncreaseQuantityCommand = new RelayCommand(IncreaseQuantity, row => row is PartRow part && Parts.Contains(part));
+        DecreaseQuantityCommand = new RelayCommand(DecreaseQuantity, row => row is PartRow part && Parts.Contains(part) && part.Quantity > 1);
+        CopyResultsCommand = new RelayCommand(_ => CopyResults(), _ => CanUseCurrentResult());
+        GenerateReportCommand = new RelayCommand(async _ => await GenerateReportAsync(), _ => CanGenerateReport());
+        BrowseReportOutputPathCommand = new RelayCommand(_ => BrowseReportOutputPath());
         ClearAllCommand = new RelayCommand(_ => ClearAll(), _ => Parts.Count > 0 || ProjectMaterials.Count > 0);
         SaveProjectCommand = new RelayCommand(_ => SaveProject(), _ => CanSaveProject());
         OpenProjectCommand = new RelayCommand(_ => OpenProject());
@@ -94,17 +107,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
             SelectedPart = null;
             OnPropertyChanged();
             OnPropertyChanged(nameof(ActiveMaterial));
-            OnPropertyChanged(nameof(ActiveParts));
-            OnPropertyChanged(nameof(HasActiveParts));
             ValidateParts();
             CommandManager.InvalidateRequerySuggested();
         }
     }
 
     public LinearMaterial? ActiveMaterial => ProjectMaterials.FirstOrDefault(x => x.Id == ActiveMaterialId);
-    public IEnumerable<PartRow> ActiveParts => Parts.Where(x => x.MaterialId == ActiveMaterialId);
     public bool HasProjectMaterials => ProjectMaterials.Count > 0;
-    public bool HasActiveParts => ActiveParts.Any();
+    public bool HasParts => Parts.Count > 0;
     public IEnumerable<LinearMaterial> AvailableLibraryMaterials
         => LibraryMaterials.Where(x => ProjectMaterials.All(projectMaterial => projectMaterial.Id != x.Id));
 
@@ -142,6 +152,54 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    public ProjectCuttingTask? CurrentTask
+    {
+        get => _currentTask;
+        private set { _currentTask = value; OnPropertyChanged(); }
+    }
+
+    public ProjectCuttingResult? CurrentResult
+    {
+        get => _currentResult;
+        private set
+        {
+            _currentResult = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasCurrentResult));
+            OnPropertyChanged(nameof(CurrentResultStatusText));
+        }
+    }
+
+    public bool HasCurrentResult => CurrentResult != null;
+
+    public bool IsCurrentResultStale
+    {
+        get => _isCurrentResultStale;
+        private set { _isCurrentResultStale = value; OnPropertyChanged(); }
+    }
+
+    public string ReportOutputPath
+    {
+        get => _reportOutputPath;
+        set
+        {
+            var normalized = value?.Trim() ?? string.Empty;
+            if (_reportOutputPath == normalized)
+                return;
+
+            _reportOutputPath = normalized;
+            OnPropertyChanged();
+            SaveSettings();
+            CommandManager.InvalidateRequerySuggested();
+        }
+    }
+
+    public string CurrentResultStatusText => CurrentResult == null
+        ? string.Empty
+        : CurrentResult.Status == CalculationStatus.Optimal
+            ? StatusOptimal
+            : StatusBestFound;
+
     public ICommand AddRowCommand { get; }
     public ICommand DeleteRowCommand { get; }
     public ICommand UndoCommand { get; }
@@ -151,6 +209,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ICommand AddMaterialCommand { get; }
     public ICommand RemoveMaterialCommand { get; }
     public ICommand SetActiveMaterialCommand { get; }
+    public ICommand IncreaseQuantityCommand { get; }
+    public ICommand DecreaseQuantityCommand { get; }
+    public ICommand CopyResultsCommand { get; }
+    public ICommand GenerateReportCommand { get; }
+    public ICommand BrowseReportOutputPathCommand { get; }
     public ICommand ClearAllCommand { get; }
     public ICommand SaveProjectCommand { get; }
     public ICommand OpenProjectCommand { get; }
@@ -186,6 +249,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         ProjectMaterials.Add(CloneMaterial(material));
         ActiveMaterialId = material.Id;
+        MarkCurrentResultStale();
         OnPropertyChanged(nameof(HasProjectMaterials));
         OnPropertyChanged(nameof(AvailableLibraryMaterials));
     }
@@ -212,10 +276,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ProjectMaterials.Remove(material);
         ActiveMaterialId = ProjectMaterials.FirstOrDefault()?.Id;
         RenumberRows();
+        MarkCurrentResultStale();
         OnPropertyChanged(nameof(HasProjectMaterials));
-        OnPropertyChanged(nameof(HasActiveParts));
         OnPropertyChanged(nameof(AvailableLibraryMaterials));
-        OnPropertyChanged(nameof(ActiveParts));
     }
 
     private void SetActiveMaterial(object? parameter)
@@ -237,6 +300,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         var settings = _appSettingsService.Load();
         _localization.Culture = settings.Culture;
+        _reportOutputPath = settings.ReportOutputPath ?? string.Empty;
         if (Enum.TryParse<AppTheme>(settings.Theme, true, out var theme))
         {
             _currentTheme = theme;
@@ -250,7 +314,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _appSettingsService.Save(new AppSettings
         {
             Culture = _localization.Culture,
-            Theme = _currentTheme.ToString()
+            Theme = _currentTheme.ToString(),
+            ReportOutputPath = ReportOutputPath
         });
     }
 
@@ -260,7 +325,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             return;
 
         PushUndoSnapshot();
-        var number = Parts.Count(x => x.MaterialId == ActiveMaterialId) + 1;
+        var number = Parts.Count + 1;
         var row = new PartRow
         {
             MaterialId = ActiveMaterialId,
@@ -271,8 +336,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ValidateRow(row);
         Parts.Add(row);
         RenumberRows();
-        OnPropertyChanged(nameof(ActiveParts));
-        OnPropertyChanged(nameof(HasActiveParts));
     }
 
     private void DeleteRow(PartRow? row)
@@ -286,18 +349,88 @@ public sealed class MainViewModel : INotifyPropertyChanged
         if (ReferenceEquals(SelectedPart, target))
             SelectedPart = null;
         RenumberRows();
-        OnPropertyChanged(nameof(ActiveParts));
-        OnPropertyChanged(nameof(HasActiveParts));
     }
 
     private void RenumberRows()
     {
-        foreach (var materialGroup in Parts.GroupBy(x => x.MaterialId))
+        for (var index = 0; index < Parts.Count; index++)
+            Parts[index].RowNumber = index + 1;
+    }
+
+    private void IncreaseQuantity(object? parameter)
+    {
+        if (parameter is not PartRow row || !Parts.Contains(row))
+            return;
+
+        if (_pendingEditSnapshot == null)
+            PushUndoSnapshot();
+        row.Quantity++;
+    }
+
+    private void DecreaseQuantity(object? parameter)
+    {
+        if (parameter is not PartRow row || !Parts.Contains(row) || row.Quantity <= 1)
+            return;
+
+        if (_pendingEditSnapshot == null)
+            PushUndoSnapshot();
+        row.Quantity--;
+    }
+
+    private void OnPartsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == NotifyCollectionChangedAction.Reset)
         {
-            var number = 1;
-            foreach (var row in materialGroup)
-                row.RowNumber = number++;
+            foreach (var row in _trackedRows)
+                row.PropertyChanged -= OnPartRowPropertyChanged;
+            _trackedRows.Clear();
+            foreach (var row in Parts)
+                TrackRow(row);
         }
+        else
+        {
+            if (e.OldItems != null)
+            {
+                foreach (PartRow row in e.OldItems)
+                    UntrackRow(row);
+            }
+
+            if (e.NewItems != null)
+            {
+                foreach (PartRow row in e.NewItems)
+                    TrackRow(row);
+            }
+        }
+
+        OnPropertyChanged(nameof(HasParts));
+        MarkCurrentResultStale();
+        CommandManager.InvalidateRequerySuggested();
+    }
+
+    private void TrackRow(PartRow row)
+    {
+        if (_trackedRows.Add(row))
+            row.PropertyChanged += OnPartRowPropertyChanged;
+    }
+
+    private void UntrackRow(PartRow row)
+    {
+        if (_trackedRows.Remove(row))
+            row.PropertyChanged -= OnPartRowPropertyChanged;
+    }
+
+    private void OnPartRowPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is not PartRow row || e.PropertyName is not (
+                nameof(PartRow.Name) or
+                nameof(PartRow.Length) or
+                nameof(PartRow.Quantity) or
+                nameof(PartRow.MaterialId)))
+            return;
+
+        ValidateRow(row);
+        MarkCurrentResultStale();
+        CommandManager.InvalidateRequerySuggested();
     }
 
     private void PasteFromClipboard()
@@ -328,7 +461,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 if (cells.Length >= 3 && !int.TryParse(cells[2], out quantity))
                     continue;
 
-                var rowNumber = Parts.Count(x => x.MaterialId == ActiveMaterialId) + 1;
+                var rowNumber = Parts.Count + 1;
                 var row = new PartRow
                 {
                     MaterialId = ActiveMaterialId,
@@ -348,8 +481,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 RaiseUndoCanExecuteChanged();
             }
             RenumberRows();
-            OnPropertyChanged(nameof(ActiveParts));
-            OnPropertyChanged(nameof(HasActiveParts));
         }
         catch (Exception ex)
         {
@@ -400,7 +531,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             StatusText = result.Status == CalculationStatus.Optimal
                 ? StatusOptimal
                 : StatusBestFound;
-            _resultWindowService?.Show(task, result);
+            SetCurrentResult(task, result);
         }
         catch (Exception ex)
         {
@@ -419,6 +550,92 @@ public sealed class MainViewModel : INotifyPropertyChanged
             Materials = ProjectMaterials.Select(CloneMaterial).ToList(),
             Parts = Parts.Select(row => row.ToPartRequirement()).ToList()
         };
+
+    private void SetCurrentResult(ProjectCuttingTask task, ProjectCuttingResult result)
+    {
+        CurrentTask = task;
+        CurrentResult = result;
+        IsCurrentResultStale = false;
+        CommandManager.InvalidateRequerySuggested();
+    }
+
+    private void MarkCurrentResultStale()
+    {
+        if (CurrentResult == null || IsCurrentResultStale)
+            return;
+
+        IsCurrentResultStale = true;
+        CommandManager.InvalidateRequerySuggested();
+    }
+
+    private void ClearCurrentResult()
+    {
+        CurrentTask = null;
+        CurrentResult = null;
+        IsCurrentResultStale = false;
+        CommandManager.InvalidateRequerySuggested();
+    }
+
+    private bool CanUseCurrentResult()
+        => !IsBusy && !IsCurrentResultStale && CurrentResult != null;
+
+    private bool CanGenerateReport()
+        => CanUseCurrentResult() && CurrentTask != null && _reportService != null && !string.IsNullOrWhiteSpace(ReportOutputPath);
+
+    private void CopyResults()
+    {
+        if (!CanUseCurrentResult())
+            return;
+
+        try
+        {
+            Clipboard.SetText(CuttingTextFormatter.FormatProjectResult(CurrentResult!, _localization));
+            StatusText = _localization.StatusResultsCopied;
+        }
+        catch (Exception ex)
+        {
+            StatusText = string.Format(_localization.ErrorResultActionFailed, ex.Message);
+        }
+    }
+
+    public async Task GenerateReportAsync()
+    {
+        if (!CanGenerateReport())
+            return;
+
+        var task = CurrentTask!;
+        var result = CurrentResult!;
+        var outputFolder = ReportOutputPath;
+        IsBusy = true;
+        StatusText = _localization.StatusGeneratingReport;
+        try
+        {
+            var fileName = $"{AppConstants.ReportFileNamePrefix}{DateTime.Now.ToString(AppConstants.ReportTimestampFormat)}{AppConstants.ReportFileExtension}";
+            var outputPath = Path.Combine(outputFolder, fileName);
+            Directory.CreateDirectory(outputFolder);
+            await Task.Run(() => _reportService!.GenerateReport(outputPath, task, result));
+            StatusText = string.Format(_localization.StatusReportSaved, outputPath);
+        }
+        catch (Exception ex)
+        {
+            StatusText = string.Format(_localization.ErrorResultActionFailed, ex.Message);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void BrowseReportOutputPath()
+    {
+        using var dialog = new System.Windows.Forms.FolderBrowserDialog
+        {
+            Description = _localization.LabelReportOutputPath,
+            SelectedPath = Directory.Exists(ReportOutputPath) ? ReportOutputPath : string.Empty
+        };
+        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            ReportOutputPath = dialog.SelectedPath;
+    }
 
     private void OpenMaterials()
     {
@@ -441,11 +658,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ProjectMaterials.Clear();
         ActiveMaterialId = null;
         StatusText = string.Empty;
+        ClearCurrentResult();
         ClearUndoHistory();
         OnPropertyChanged(nameof(HasProjectMaterials));
-        OnPropertyChanged(nameof(HasActiveParts));
         OnPropertyChanged(nameof(AvailableLibraryMaterials));
-        OnPropertyChanged(nameof(ActiveParts));
     }
 
     private bool CanSaveProject()
@@ -509,11 +725,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ActiveMaterialId = ProjectMaterials.FirstOrDefault()?.Id;
         RenumberRows();
         ValidateParts();
+        ClearCurrentResult();
         ClearUndoHistory();
         OnPropertyChanged(nameof(HasProjectMaterials));
-        OnPropertyChanged(nameof(HasActiveParts));
         OnPropertyChanged(nameof(AvailableLibraryMaterials));
-        OnPropertyChanged(nameof(ActiveParts));
     }
 
     public void BeginPartEdit()
@@ -571,7 +786,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         SelectedPart = null;
         RenumberRows();
         ValidateParts();
-        OnPropertyChanged(nameof(ActiveParts));
         RaiseUndoCanExecuteChanged();
     }
 

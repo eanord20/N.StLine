@@ -1,4 +1,3 @@
-using System.Text;
 using System.Windows.Input;
 using NStLine.App.Commands;
 using NStLine.App.Formatters;
@@ -39,28 +38,7 @@ public sealed class ResultWindowViewModel
     public ICommand CloseCommand { get; }
 
     public string BuildCopyText()
-    {
-        var text = new StringBuilder();
-        text.AppendLine(StatusText);
-        text.AppendLine($"{LocalizationService.Instance.LabelTotalBars}: {Result.TotalBarCount}");
-        text.AppendLine($"{LocalizationService.Instance.LabelTotalPartLength}: {Result.TotalPartLength:0.##}");
-        text.AppendLine($"{LocalizationService.Instance.LabelTotalCutLoss}: {Result.TotalCutLoss:0.##}");
-        text.AppendLine($"{LocalizationService.Instance.LabelTotalRemainder}: {Result.TotalRemainder:0.##}");
-        text.AppendLine($"{LocalizationService.Instance.LabelUtilization}: {Result.UtilizationPercent:0.##}%");
-
-        foreach (var materialResult in Materials)
-        {
-            text.AppendLine();
-            text.AppendLine(materialResult.Material.Name);
-            foreach (var bar in materialResult.Result.Bars)
-            {
-                var parts = CuttingTextFormatter.FormatGroupedParts(bar.Parts);
-                text.AppendLine($"{bar.BarLength:0.##} ({bar.CutCount}) = {parts} + {bar.Remainder:0.##}");
-            }
-        }
-
-        return text.ToString();
-    }
+        => CuttingTextFormatter.FormatProjectResult(Result, LocalizationService.Instance);
 
     private void ExportDocx()
     {

@@ -1,3 +1,5 @@
+using System.IO;
+using System.Text.RegularExpressions;
 using NStLine.App.Models;
 using NStLine.App.Services;
 using NStLine.App.ViewModels;
@@ -9,7 +11,63 @@ namespace NStLine.App.Tests;
 public sealed class MainViewModelCalculationTests
 {
     [Fact]
-    public async Task CalculateAsync_OpensIndependentResultSnapshot()
+    public async Task CalculateAsyncStoresResultForMainWindowActions()
+    {
+        var (viewModel, _, _) = CreateViewModel();
+
+        await viewModel.CalculateAsync();
+
+        Assert.NotNull(viewModel.CurrentTask);
+        Assert.NotNull(viewModel.CurrentResult);
+        Assert.False(viewModel.IsCurrentResultStale);
+        Assert.True(viewModel.CopyResultsCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task EditingPartDisablesResultActionsUntilNextCalculation()
+    {
+        var (viewModel, _, _) = CreateViewModel();
+        var row = Assert.Single(viewModel.Parts);
+        await viewModel.CalculateAsync();
+
+        viewModel.BeginPartEdit();
+        row.Length = 1200;
+        viewModel.CommitPartEdit();
+
+        Assert.True(viewModel.IsCurrentResultStale);
+        Assert.False(viewModel.CopyResultsCommand.CanExecute(null));
+        Assert.False(viewModel.GenerateReportCommand.CanExecute(null));
+
+        await viewModel.CalculateAsync();
+
+        Assert.False(viewModel.IsCurrentResultStale);
+        Assert.True(viewModel.CopyResultsCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task GenerateReportAsyncUsesPersistedFolderAndTimestampedFileName()
+    {
+        var outputFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        var (viewModel, reports, settings) = CreateViewModel();
+        try
+        {
+            viewModel.ReportOutputPath = outputFolder;
+            await viewModel.CalculateAsync();
+            await viewModel.GenerateReportAsync();
+
+            Assert.NotNull(reports.OutputPath);
+            Assert.Equal(outputFolder, Path.GetDirectoryName(reports.OutputPath));
+            Assert.Matches(new Regex(@"^N\.StLine_Report_\d{4}-\d{2}-\d{2}_\d{6}\.docx$"), Path.GetFileName(reports.OutputPath));
+            Assert.Equal(outputFolder, settings.Saved?.ReportOutputPath);
+        }
+        finally
+        {
+            if (Directory.Exists(outputFolder))
+                Directory.Delete(outputFolder, true);
+        }
+    }
+
+    private static (MainViewModel ViewModel, RecordingReportService Reports, MemorySettingsService Settings) CreateViewModel(string reportOutputPath = "")
     {
         var material = new LinearMaterial
         {
@@ -18,25 +76,20 @@ public sealed class MainViewModelCalculationTests
             StandardLength = 6000,
             CutWidth = 3
         };
-        var engine = new RecordingProjectCuttingEngine();
-        var windows = new RecordingResultWindowService();
+        var reports = new RecordingReportService();
+        var settings = new MemorySettingsService(new AppSettings { ReportOutputPath = reportOutputPath });
         var viewModel = new MainViewModel(
-            engine,
+            new RecordingProjectCuttingEngine(),
             new MemoryMaterialsLibraryService(material),
             null,
-            new MemorySettingsService(),
-            windows);
+            settings,
+            reportService: reports);
         viewModel.AddMaterialCommand.Execute(material);
         viewModel.AddRowCommand.Execute(null);
         var row = Assert.Single(viewModel.Parts);
         row.Length = 1000;
         row.Quantity = 2;
-
-        await viewModel.CalculateAsync();
-
-        Assert.NotNull(windows.Task);
-        Assert.NotNull(windows.Result);
-        Assert.Equal("material", Assert.Single(windows.Task!.Parts).MaterialId);
+        return (viewModel, reports, settings);
     }
 
     private sealed class RecordingProjectCuttingEngine : IProjectCuttingEngine
@@ -66,16 +119,12 @@ public sealed class MainViewModelCalculationTests
         }
     }
 
-    private sealed class RecordingResultWindowService : IResultWindowService
+    private sealed class RecordingReportService : IReportService
     {
-        public ProjectCuttingTask? Task { get; private set; }
-        public ProjectCuttingResult? Result { get; private set; }
+        public string? OutputPath { get; private set; }
 
-        public void Show(ProjectCuttingTask task, ProjectCuttingResult result)
-        {
-            Task = task;
-            Result = result;
-        }
+        public void GenerateReport(string outputPath, ProjectCuttingTask task, ProjectCuttingResult result)
+            => OutputPath = outputPath;
     }
 
     private sealed class MemoryMaterialsLibraryService : IMaterialsLibraryService
@@ -88,7 +137,12 @@ public sealed class MainViewModelCalculationTests
 
     private sealed class MemorySettingsService : IAppSettingsService
     {
-        public AppSettings Load() => new();
-        public void Save(AppSettings settings) { }
+        private readonly AppSettings _settings;
+
+        public MemorySettingsService(AppSettings settings) => _settings = settings;
+
+        public AppSettings? Saved { get; private set; }
+        public AppSettings Load() => _settings;
+        public void Save(AppSettings settings) => Saved = settings;
     }
 }

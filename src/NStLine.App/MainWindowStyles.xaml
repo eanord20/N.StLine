@@ -3,6 +3,22 @@
                     xmlns:conv="clr-namespace:NStLine.App.Converters">
     <conv:ActiveMaterialMatchConverter x:Key="ActiveMaterialMatchConverter" />
 
+    <Style x:Key="WorkspaceCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignCardBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignDivider}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="10" />
+    </Style>
+
+    <Style x:Key="StaleResultBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource ErrorRowBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignDivider}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="8" />
+    </Style>
+
     <Style x:Key="PrimaryActionButtonStyle" TargetType="Button" BasedOn="{StaticResource AppToolbarButtonStyle}">
         <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidForegroundBrush}" />
