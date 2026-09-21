@@ -12,8 +12,8 @@ public sealed class ProjectData
     public LinearMaterial? Material { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public double BarLength { get; set; }
+    public double? BarLength { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public double CutWidth { get; set; }
+    public double? CutWidth { get; set; }
 }

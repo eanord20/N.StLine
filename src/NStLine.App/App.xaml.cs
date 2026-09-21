@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Threading;
 using NStLine.App.Services;
 using NStLine.Core.Constants;
+using NStLine.Cutting.Services;
 using Application = System.Windows.Application;
 
 namespace NStLine.App;
@@ -21,14 +22,16 @@ public partial class App : Application
 
         ThemeService.Apply(AppTheme.Light);
 
+        var cuttingEngine = new CuttingEngine();
+        var reportService = new ReportService();
         var mainWindow = new MainWindow
         {
             DataContext = new ViewModels.MainViewModel(
-                new Cutting.Services.CuttingEngine(),
+                new ProjectCuttingEngine(cuttingEngine),
                 new MaterialsLibraryService(),
                 new ProjectFileService(),
                 new AppSettingsService(),
-                new ReportService())
+                new ResultWindowService(reportService))
         };
         mainWindow.Show();
     }

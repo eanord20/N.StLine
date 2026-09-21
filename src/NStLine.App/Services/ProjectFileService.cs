@@ -33,8 +33,8 @@ public sealed class ProjectFileService : IProjectFileService
             {
                 Id = data.Material.Id,
                 Name = data.Material.Name,
-                StandardLength = data.BarLength > 0 ? data.BarLength : data.Material.StandardLength,
-                CutWidth = data.CutWidth > 0 ? data.CutWidth : data.Material.CutWidth
+                StandardLength = data.BarLength ?? data.Material.StandardLength,
+                CutWidth = data.CutWidth ?? data.Material.CutWidth
             };
             data.Materials.Add(material);
         }
@@ -46,7 +46,7 @@ public sealed class ProjectFileService : IProjectFileService
         }
 
         data.Material = null;
-        data.BarLength = 0;
-        data.CutWidth = 0;
+        data.BarLength = null;
+        data.CutWidth = null;
     }
 }

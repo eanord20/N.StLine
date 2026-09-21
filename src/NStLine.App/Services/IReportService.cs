@@ -4,5 +4,5 @@ namespace NStLine.App.Services;
 
 public interface IReportService
 {
-    void GenerateReport(string outputPath, CuttingTask task, CuttingResult result);
+    void GenerateReport(string outputPath, ProjectCuttingTask task, ProjectCuttingResult result);
 }

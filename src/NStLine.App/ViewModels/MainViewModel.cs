@@ -20,43 +20,49 @@ namespace NStLine.App.ViewModels;
 
 public sealed class MainViewModel : INotifyPropertyChanged
 {
+    private const int MaxUndoDepth = 50;
+
     private readonly LocalizationService _localization = LocalizationService.Instance;
     private readonly IMaterialsLibraryService _materialsLibraryService;
     private readonly IProjectFileService? _projectFileService;
     private readonly IAppSettingsService _appSettingsService;
-    private readonly IReportService? _reportService;
-    private readonly ICuttingEngine _cuttingEngine;
+    private readonly IProjectCuttingEngine _cuttingEngine;
+    private readonly IResultWindowService? _resultWindowService;
+    private readonly PartRowsUndoHistory _undoHistory = new(MaxUndoDepth);
 
-    private LinearMaterial? _selectedMaterial;
-    private double _barLength;
-    private double _cutWidth;
-    private CuttingResult? _result;
+    private string? _activeMaterialId;
     private string _statusText = string.Empty;
     private double _progressValue;
     private bool _isBusy;
     private PartRow? _selectedPart;
     private AppTheme _currentTheme = AppTheme.Light;
+    private PartRowsSnapshot? _pendingEditSnapshot;
 
-    public MainViewModel(ICuttingEngine cuttingEngine,
-                         IMaterialsLibraryService? materialsLibraryService = null,
-                         IProjectFileService? projectFileService = null,
-                         IAppSettingsService? appSettingsService = null,
-                         IReportService? reportService = null)
+    public MainViewModel(
+        IProjectCuttingEngine cuttingEngine,
+        IMaterialsLibraryService? materialsLibraryService = null,
+        IProjectFileService? projectFileService = null,
+        IAppSettingsService? appSettingsService = null,
+        IResultWindowService? resultWindowService = null)
     {
         _cuttingEngine = cuttingEngine;
         _materialsLibraryService = materialsLibraryService ?? new MaterialsLibraryService();
         _projectFileService = projectFileService;
         _appSettingsService = appSettingsService ?? new AppSettingsService();
-        _reportService = reportService;
+        _resultWindowService = resultWindowService;
 
-        AddRowCommand = new RelayCommand(_ => AddRow());
-        DeleteRowCommand = new RelayCommand(_ => DeleteRow(), _ => SelectedPart != null);
-        PasteFromClipboardCommand = new RelayCommand(_ => PasteFromClipboard());
+        AddRowCommand = new RelayCommand(_ => AddRow(), _ => ActiveMaterial != null);
+        DeleteRowCommand = new RelayCommand(
+            row => DeleteRow(row as PartRow),
+            row => row is PartRow || SelectedPart != null);
+        UndoCommand = new RelayCommand(_ => Undo(), _ => _undoHistory.CanUndo);
+        PasteFromClipboardCommand = new RelayCommand(_ => PasteFromClipboard(), _ => ActiveMaterial != null);
         CalculateCommand = new RelayCommand(async _ => await CalculateAsync(), _ => CanCalculate());
-        CopyResultsCommand = new RelayCommand(_ => CopyResults(), _ => Result != null);
-        ExportDocxCommand = new RelayCommand(_ => ExportDocx(), _ => Result != null && _reportService != null);
         OpenMaterialsCommand = new RelayCommand(_ => OpenMaterials());
-        ClearAllCommand = new RelayCommand(_ => ClearAll(), _ => Parts.Count > 0 || Result != null);
+        AddMaterialCommand = new RelayCommand(AddMaterial, material => material is LinearMaterial);
+        RemoveMaterialCommand = new RelayCommand(RemoveMaterial, id => id is string);
+        SetActiveMaterialCommand = new RelayCommand(SetActiveMaterial, id => id is string);
+        ClearAllCommand = new RelayCommand(_ => ClearAll(), _ => Parts.Count > 0 || ProjectMaterials.Count > 0);
         SaveProjectCommand = new RelayCommand(_ => SaveProject(), _ => CanSaveProject());
         OpenProjectCommand = new RelayCommand(_ => OpenProject());
         SetLanguageCommand = new RelayCommand(lang => SetLanguage(lang?.ToString() ?? "en"));
@@ -74,57 +80,33 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public ObservableCollection<PartRow> Parts { get; } = new();
     public ObservableCollection<LinearMaterial> LibraryMaterials { get; } = new();
+    public ObservableCollection<LinearMaterial> ProjectMaterials { get; } = new();
 
-    public LinearMaterial? SelectedMaterial
+    public string? ActiveMaterialId
     {
-        get => _selectedMaterial;
+        get => _activeMaterialId;
         set
         {
-            _selectedMaterial = value;
-            OnPropertyChanged();
-            if (value != null)
-            {
-                CutWidth = value.CutWidth;
-                if (_barLength <= 0)
-                    BarLength = value.StandardLength;
-            }
-            CommandManager.InvalidateRequerySuggested();
-        }
-    }
+            if (_activeMaterialId == value)
+                return;
 
-    public double BarLength
-    {
-        get => _barLength;
-        set
-        {
-            _barLength = value;
+            _activeMaterialId = value;
+            SelectedPart = null;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(ActiveMaterial));
+            OnPropertyChanged(nameof(ActiveParts));
+            OnPropertyChanged(nameof(HasActiveParts));
             ValidateParts();
             CommandManager.InvalidateRequerySuggested();
         }
     }
 
-    public double CutWidth
-    {
-        get => _cutWidth;
-        set
-        {
-            _cutWidth = value;
-            OnPropertyChanged();
-            CommandManager.InvalidateRequerySuggested();
-        }
-    }
-
-    public CuttingResult? Result
-    {
-        get => _result;
-        private set
-        {
-            _result = value;
-            OnPropertyChanged();
-            CommandManager.InvalidateRequerySuggested();
-        }
-    }
+    public LinearMaterial? ActiveMaterial => ProjectMaterials.FirstOrDefault(x => x.Id == ActiveMaterialId);
+    public IEnumerable<PartRow> ActiveParts => Parts.Where(x => x.MaterialId == ActiveMaterialId);
+    public bool HasProjectMaterials => ProjectMaterials.Count > 0;
+    public bool HasActiveParts => ActiveParts.Any();
+    public IEnumerable<LinearMaterial> AvailableLibraryMaterials
+        => LibraryMaterials.Where(x => ProjectMaterials.All(projectMaterial => projectMaterial.Id != x.Id));
 
     public string StatusText
     {
@@ -162,11 +144,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public ICommand AddRowCommand { get; }
     public ICommand DeleteRowCommand { get; }
+    public ICommand UndoCommand { get; }
     public ICommand PasteFromClipboardCommand { get; }
     public ICommand CalculateCommand { get; }
-    public ICommand CopyResultsCommand { get; }
-    public ICommand ExportDocxCommand { get; }
     public ICommand OpenMaterialsCommand { get; }
+    public ICommand AddMaterialCommand { get; }
+    public ICommand RemoveMaterialCommand { get; }
+    public ICommand SetActiveMaterialCommand { get; }
     public ICommand ClearAllCommand { get; }
     public ICommand SaveProjectCommand { get; }
     public ICommand OpenProjectCommand { get; }
@@ -195,6 +179,60 @@ public sealed class MainViewModel : INotifyPropertyChanged
             LibraryMaterials.Add(material);
     }
 
+    private void AddMaterial(object? parameter)
+    {
+        if (parameter is not LinearMaterial material || ProjectMaterials.Any(x => x.Id == material.Id))
+            return;
+
+        ProjectMaterials.Add(CloneMaterial(material));
+        ActiveMaterialId = material.Id;
+        OnPropertyChanged(nameof(HasProjectMaterials));
+        OnPropertyChanged(nameof(AvailableLibraryMaterials));
+    }
+
+    private void RemoveMaterial(object? parameter)
+    {
+        if (parameter is not string materialId)
+            return;
+
+        var material = ProjectMaterials.FirstOrDefault(x => x.Id == materialId);
+        if (material == null)
+            return;
+
+        var rows = Parts.Where(x => x.MaterialId == materialId).ToList();
+        if (rows.Count > 0 && MessageBox.Show(
+                string.Format(_localization.ConfirmRemoveMaterial, material.Name),
+                _localization.WindowTitle,
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            return;
+
+        foreach (var row in rows)
+            Parts.Remove(row);
+        ProjectMaterials.Remove(material);
+        ActiveMaterialId = ProjectMaterials.FirstOrDefault()?.Id;
+        RenumberRows();
+        OnPropertyChanged(nameof(HasProjectMaterials));
+        OnPropertyChanged(nameof(HasActiveParts));
+        OnPropertyChanged(nameof(AvailableLibraryMaterials));
+        OnPropertyChanged(nameof(ActiveParts));
+    }
+
+    private void SetActiveMaterial(object? parameter)
+    {
+        if (parameter is string materialId && ProjectMaterials.Any(x => x.Id == materialId))
+            ActiveMaterialId = materialId;
+    }
+
+    private static LinearMaterial CloneMaterial(LinearMaterial material)
+        => new()
+        {
+            Id = material.Id,
+            Name = material.Name,
+            StandardLength = material.StandardLength,
+            CutWidth = material.CutWidth
+        };
+
     private void LoadSettings()
     {
         var settings = _appSettingsService.Load();
@@ -218,37 +256,63 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void AddRow()
     {
-        var number = Parts.Count + 1;
-        Parts.Add(new PartRow { Name = $"Part {number}", RowNumber = number, Quantity = 1 });
+        if (ActiveMaterialId == null)
+            return;
+
+        PushUndoSnapshot();
+        var number = Parts.Count(x => x.MaterialId == ActiveMaterialId) + 1;
+        var row = new PartRow
+        {
+            MaterialId = ActiveMaterialId,
+            Name = $"Part {number}",
+            RowNumber = number,
+            Quantity = 1
+        };
+        ValidateRow(row);
+        Parts.Add(row);
         RenumberRows();
+        OnPropertyChanged(nameof(ActiveParts));
+        OnPropertyChanged(nameof(HasActiveParts));
     }
 
-    private void DeleteRow()
+    private void DeleteRow(PartRow? row)
     {
-        if (SelectedPart != null)
-        {
-            Parts.Remove(SelectedPart);
-            RenumberRows();
-        }
+        var target = row ?? SelectedPart;
+        if (target == null)
+            return;
+
+        PushUndoSnapshot();
+        Parts.Remove(target);
+        if (ReferenceEquals(SelectedPart, target))
+            SelectedPart = null;
+        RenumberRows();
+        OnPropertyChanged(nameof(ActiveParts));
+        OnPropertyChanged(nameof(HasActiveParts));
     }
 
     private void RenumberRows()
     {
-        for (int i = 0; i < Parts.Count; i++)
-            Parts[i].RowNumber = i + 1;
+        foreach (var materialGroup in Parts.GroupBy(x => x.MaterialId))
+        {
+            var number = 1;
+            foreach (var row in materialGroup)
+                row.RowNumber = number++;
+        }
     }
 
     private void PasteFromClipboard()
     {
         try
         {
-            if (!Clipboard.ContainsText())
+            if (ActiveMaterialId == null || !Clipboard.ContainsText())
                 return;
 
             var text = Clipboard.GetText();
             if (string.IsNullOrWhiteSpace(text))
                 return;
 
+            var snapshot = CaptureSnapshot();
+            var originalCount = Parts.Count;
             var lines = text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var line in lines)
             {
@@ -264,19 +328,28 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 if (cells.Length >= 3 && !int.TryParse(cells[2], out quantity))
                     continue;
 
+                var rowNumber = Parts.Count(x => x.MaterialId == ActiveMaterialId) + 1;
                 var row = new PartRow
                 {
-                    Name = string.IsNullOrWhiteSpace(name) ? $"Part {Parts.Count + 1}" : name,
+                    MaterialId = ActiveMaterialId,
+                    Name = string.IsNullOrWhiteSpace(name) ? $"Part {rowNumber}" : name,
                     Length = length,
                     Quantity = Math.Max(1, quantity),
-                    RowNumber = Parts.Count + 1
+                    RowNumber = rowNumber
                 };
 
                 ValidateRow(row);
                 Parts.Add(row);
             }
 
+            if (Parts.Count > originalCount)
+            {
+                _undoHistory.Push(snapshot.Rows, snapshot.ActiveMaterialId);
+                RaiseUndoCanExecuteChanged();
+            }
             RenumberRows();
+            OnPropertyChanged(nameof(ActiveParts));
+            OnPropertyChanged(nameof(HasActiveParts));
         }
         catch (Exception ex)
         {
@@ -292,49 +365,42 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void ValidateRow(PartRow row)
     {
-        if (row.Length <= 0)
-            row.SetError("Length must be greater than zero.");
+        var material = ProjectMaterials.FirstOrDefault(x => x.Id == row.MaterialId);
+        if (material == null)
+            row.SetError(_localization.ErrorMaterialNotAssigned);
+        else if (row.Length <= 0)
+            row.SetError(_localization.ErrorLengthPositive);
         else if (row.Quantity <= 0)
-            row.SetError("Quantity must be greater than zero.");
-        else if (BarLength > 0 && row.Length + CutWidth > BarLength)
-            row.SetError("Part does not fit into the bar.");
+            row.SetError(_localization.ErrorQuantityPositive);
+        else if (row.Length + material.CutWidth > material.StandardLength)
+            row.SetError(_localization.ErrorPartDoesNotFit);
         else
             row.ClearError();
     }
 
     private bool CanCalculate()
     {
-        if (IsBusy || SelectedMaterial == null || BarLength <= 0 || CutWidth < 0)
-            return false;
-        if (Parts.Count == 0)
+        if (IsBusy || ProjectMaterials.Count == 0 || Parts.Count == 0)
             return false;
         return Parts.All(p => !p.HasError);
     }
 
-    private async Task CalculateAsync()
+    public async Task CalculateAsync()
     {
         IsBusy = true;
         ProgressValue = 0;
-        StatusText = "Calculating...";
-        Result = null;
+        StatusText = _localization.StatusCalculating;
 
         try
         {
-            var task = new CuttingTask
-            {
-                Material = SelectedMaterial!,
-                BarLength = BarLength,
-                CutWidth = CutWidth,
-                Parts = Parts.Select(p => p.ToPartRequirement()).ToList()
-            };
-
+            var task = CreateProjectTaskSnapshot();
             var options = AppConstants.DefaultCuttingOptions;
             var progress = new Progress<double>(v => ProgressValue = v * 100);
-
-            Result = await Task.Run(() => _cuttingEngine.Solve(task, options, progress));
-            StatusText = Result.Status == CalculationStatus.Optimal
+            var result = await Task.Run(() => _cuttingEngine.Solve(task, options, progress));
+            StatusText = result.Status == CalculationStatus.Optimal
                 ? StatusOptimal
                 : StatusBestFound;
+            _resultWindowService?.Show(task, result);
         }
         catch (Exception ex)
         {
@@ -347,54 +413,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    private void CopyResults()
-    {
-        if (Result == null)
-            return;
-
-        var sb = new System.Text.StringBuilder();
-        sb.AppendLine($"{StatusText}");
-        sb.AppendLine($"{_localization.LabelTotalBars}: {Result.TotalBarCount}");
-        sb.AppendLine($"{_localization.LabelTotalPartLength}: {Result.TotalPartLength:F1}");
-        sb.AppendLine($"{_localization.LabelTotalCutLoss}: {Result.TotalCutLoss:F1}");
-        sb.AppendLine($"{_localization.LabelTotalRemainder}: {Result.TotalRemainder:F1}");
-        sb.AppendLine($"{_localization.LabelUtilization}: {Result.UtilizationPercent:F1}%");
-        sb.AppendLine();
-
-        foreach (var bar in Result.Bars)
+    private ProjectCuttingTask CreateProjectTaskSnapshot()
+        => new()
         {
-            var parts = string.Join(" + ", bar.Parts.Select(p => $"{p.Source.Name} {p.Source.Length:F1}"));
-            sb.AppendLine($"{bar.BarLength:F1} ({bar.CutCount} cuts) = {parts} + {bar.Remainder:F1}");
-        }
-
-        Clipboard.SetText(sb.ToString());
-    }
-
-    private void ExportDocx()
-    {
-        if (Result == null || _reportService == null || SelectedMaterial == null)
-            return;
-
-        var dialog = new SaveFileDialog
-        {
-            Filter = "DOCX document (*.docx)|*.docx",
-            DefaultExt = ".docx"
+            Materials = ProjectMaterials.Select(CloneMaterial).ToList(),
+            Parts = Parts.Select(row => row.ToPartRequirement()).ToList()
         };
-
-        if (dialog.ShowDialog() != true)
-            return;
-
-        var task = new CuttingTask
-        {
-            Material = SelectedMaterial,
-            BarLength = BarLength,
-            CutWidth = CutWidth,
-            Parts = Parts.Select(p => p.ToPartRequirement()).ToList()
-        };
-
-        _reportService.GenerateReport(dialog.FileName, task, Result);
-        StatusText = $"Report saved: {dialog.FileName}";
-    }
 
     private void OpenMaterials()
     {
@@ -405,28 +429,28 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         if (dialog.ShowDialog() == true)
         {
-            var updated = dialog.ViewModel.Materials;
-            _materialsLibraryService.SaveAll(updated);
-
-            var previousId = SelectedMaterial?.Id;
+            _materialsLibraryService.SaveAll(dialog.ViewModel.Materials);
             LoadLibrary();
-
-            SelectedMaterial = previousId != null
-                ? LibraryMaterials.FirstOrDefault(m => m.Id == previousId)
-                : null;
+            OnPropertyChanged(nameof(AvailableLibraryMaterials));
         }
     }
 
     private void ClearAll()
     {
         Parts.Clear();
-        Result = null;
+        ProjectMaterials.Clear();
+        ActiveMaterialId = null;
         StatusText = string.Empty;
+        ClearUndoHistory();
+        OnPropertyChanged(nameof(HasProjectMaterials));
+        OnPropertyChanged(nameof(HasActiveParts));
+        OnPropertyChanged(nameof(AvailableLibraryMaterials));
+        OnPropertyChanged(nameof(ActiveParts));
     }
 
     private bool CanSaveProject()
     {
-        return _projectFileService != null && Parts.Count > 0 && SelectedMaterial != null;
+        return _projectFileService != null && Parts.Count > 0 && ProjectMaterials.Count > 0;
     }
 
     private void SaveProject()
@@ -445,14 +469,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         var data = new ProjectData
         {
-            Material = SelectedMaterial,
-            BarLength = BarLength,
-            CutWidth = CutWidth,
+            Materials = ProjectMaterials.Select(CloneMaterial).ToList(),
             Parts = Parts.Select(p => p.ToPartRequirement()).ToList()
         };
 
         _projectFileService.Save(dialog.FileName, data);
-        StatusText = $"Project saved: {dialog.FileName}";
+        StatusText = string.Format(_localization.StatusProjectSaved, dialog.FileName);
     }
 
     private void OpenProject()
@@ -471,27 +493,119 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         var data = _projectFileService.Load(dialog.FileName);
         LoadProject(data);
-        StatusText = $"Project loaded: {dialog.FileName}";
+        StatusText = string.Format(_localization.StatusProjectLoaded, dialog.FileName);
     }
 
     private void LoadProject(ProjectData data)
     {
-        SelectedMaterial = LibraryMaterials.FirstOrDefault(m => m.Id == data.Material?.Id) ?? data.Material;
-        BarLength = data.BarLength;
-        CutWidth = data.CutWidth;
+        ProjectMaterials.Clear();
+        foreach (var material in data.Materials)
+            ProjectMaterials.Add(CloneMaterial(material));
 
         Parts.Clear();
-        if (data.Parts != null)
+        for (var index = 0; index < data.Parts.Count; index++)
+            Parts.Add(PartRow.FromPartRequirement(data.Parts[index], index + 1));
+
+        ActiveMaterialId = ProjectMaterials.FirstOrDefault()?.Id;
+        RenumberRows();
+        ValidateParts();
+        ClearUndoHistory();
+        OnPropertyChanged(nameof(HasProjectMaterials));
+        OnPropertyChanged(nameof(HasActiveParts));
+        OnPropertyChanged(nameof(AvailableLibraryMaterials));
+        OnPropertyChanged(nameof(ActiveParts));
+    }
+
+    public void BeginPartEdit()
+    {
+        _pendingEditSnapshot ??= CaptureSnapshot();
+    }
+
+    public void CancelPartEdit()
+    {
+        _pendingEditSnapshot = null;
+    }
+
+    public void CommitPartEdit()
+    {
+        if (_pendingEditSnapshot == null)
+            return;
+
+        if (!RowsEqual(_pendingEditSnapshot.Rows, Parts))
         {
-            for (int i = 0; i < data.Parts.Count; i++)
-            {
-                Parts.Add(PartRow.FromPartRequirement(data.Parts[i], i + 1));
-            }
+            _undoHistory.Push(_pendingEditSnapshot.Rows, _pendingEditSnapshot.ActiveMaterialId);
+            RaiseUndoCanExecuteChanged();
         }
 
-        Result = null;
+        _pendingEditSnapshot = null;
         ValidateParts();
     }
+
+    public void ClearUndoHistory()
+    {
+        _undoHistory.Clear();
+        _pendingEditSnapshot = null;
+        RaiseUndoCanExecuteChanged();
+    }
+
+    private void PushUndoSnapshot()
+    {
+        var snapshot = CaptureSnapshot();
+        _undoHistory.Push(snapshot.Rows, snapshot.ActiveMaterialId);
+        RaiseUndoCanExecuteChanged();
+    }
+
+    private PartRowsSnapshot CaptureSnapshot()
+        => new(Parts.Select(CloneRow).ToList(), ActiveMaterialId);
+
+    private void Undo()
+    {
+        if (!_undoHistory.TryPop(out var snapshot) || snapshot == null)
+            return;
+
+        Parts.Clear();
+        foreach (var row in snapshot.Rows)
+            Parts.Add(CloneRow(row));
+
+        ActiveMaterialId = snapshot.ActiveMaterialId;
+        SelectedPart = null;
+        RenumberRows();
+        ValidateParts();
+        OnPropertyChanged(nameof(ActiveParts));
+        RaiseUndoCanExecuteChanged();
+    }
+
+    private static bool RowsEqual(IReadOnlyList<PartRow> left, IReadOnlyList<PartRow> right)
+    {
+        if (left.Count != right.Count)
+            return false;
+
+        for (var index = 0; index < left.Count; index++)
+        {
+            var first = left[index];
+            var second = right[index];
+            if (first.MaterialId != second.MaterialId ||
+                first.Name != second.Name ||
+                first.Length != second.Length ||
+                first.Quantity != second.Quantity)
+                return false;
+        }
+
+        return true;
+    }
+
+    private static PartRow CloneRow(PartRow row)
+        => new()
+        {
+            RowNumber = row.RowNumber,
+            MaterialId = row.MaterialId,
+            Name = row.Name,
+            Length = row.Length,
+            Quantity = row.Quantity
+        };
+
+    private void RaiseUndoCanExecuteChanged()
+        => ((RelayCommand)UndoCommand).RaiseCanExecuteChanged();
 
     private void SetLanguage(string? culture)
     {
@@ -499,6 +613,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             return;
 
         _localization.Culture = culture;
+        ValidateParts();
         OnPropertyChanged(string.Empty);
         SaveSettings();
     }

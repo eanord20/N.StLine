@@ -4,14 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:conv="clr-namespace:NStLine.App.Converters"
+             xmlns:loc="clr-namespace:NStLine.App.Services"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="800">
-
+             d:DesignHeight="400" d:DesignWidth="900">
     <UserControl.Resources>
         <conv:BarPartsSummaryConverter x:Key="BarPartsSummaryConverter" />
     </UserControl.Resources>
 
-    <Grid Margin="0,8,0,0">
+    <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="8" />
@@ -20,50 +20,62 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="{Binding Method, StringFormat='Method: {0}'}" FontWeight="Bold" />
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="{Binding Material.Name}" FontSize="16" FontWeight="SemiBold" />
+            <TextBlock Opacity="0.72">
+                <Run Text="{Binding Material.StandardLength, StringFormat='{}{0:0.##} mm'}" />
+                <Run Text="  ·  " />
+                <Run Text="{Binding Material.CutWidth, StringFormat='cut {0:0.##} mm'}" />
+                <Run Text="  ·  " />
+                <Run Text="{Binding Result.Method}" />
+            </TextBlock>
+        </StackPanel>
 
-        <WrapPanel Grid.Row="2" Orientation="Horizontal">
-            <TextBlock Text="{Binding TotalBarCount, StringFormat='Bars: {0}'}" Margin="0,0,16,0" />
-            <TextBlock Text="{Binding TotalPartLength, StringFormat='Part length: {0:F1}'}" Margin="0,0,16,0" />
-            <TextBlock Text="{Binding TotalCutLoss, StringFormat='Cut loss: {0:F1}'}" Margin="0,0,16,0" />
-            <TextBlock Text="{Binding TotalRemainder, StringFormat='Remainder: {0:F1}'}" Margin="0,0,16,0" />
-            <TextBlock Text="{Binding UtilizationPercent, StringFormat='Utilization: {0:F1}%'}" />
+        <WrapPanel Grid.Row="2">
+            <TextBlock Text="{Binding Result.TotalBarCount, StringFormat='Bars: {0}'}" Margin="0,0,18,0" />
+            <TextBlock Text="{Binding Result.TotalCutLoss, StringFormat='Cut loss: {0:0.##}'}" Margin="0,0,18,0" />
+            <TextBlock Text="{Binding Result.TotalRemainder, StringFormat='Remainder: {0:0.##}'}" Margin="0,0,18,0" />
+            <TextBlock Text="{Binding Result.UtilizationPercent, StringFormat='Utilization: {0:0.##}%'}" />
         </WrapPanel>
 
         <DataGrid Grid.Row="4"
-                  ItemsSource="{Binding Bars}"
+                  ItemsSource="{Binding Result.Bars}"
                   AutoGenerateColumns="False"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
                   IsReadOnly="True"
+                  RowHeight="30"
+                  ColumnHeaderHeight="32"
                   GridLinesVisibility="All"
                   HorizontalGridLinesBrush="{DynamicResource MaterialDesignDivider}"
                   VerticalGridLinesBrush="{DynamicResource MaterialDesignDivider}">
-            <DataGrid.Resources>
+            <DataGrid.ColumnHeaderStyle>
                 <Style TargetType="DataGridColumnHeader">
                     <Setter Property="Background" Value="{DynamicResource MaterialDesignCardBackground}" />
                     <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
                     <Setter Property="HorizontalContentAlignment" Value="Center" />
                     <Setter Property="FontWeight" Value="Bold" />
-                    <Setter Property="Padding" Value="4,4" />
+                    <Setter Property="Padding" Value="4" />
                 </Style>
+            </DataGrid.ColumnHeaderStyle>
+            <DataGrid.CellStyle>
                 <Style TargetType="DataGridCell">
                     <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
                     <Setter Property="Background" Value="Transparent" />
                 </Style>
-            </DataGrid.Resources>
+            </DataGrid.CellStyle>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="#" Binding="{Binding Index}" Width="40" />
-                <DataGridTextColumn Header="Cuts" Binding="{Binding CutCount}" Width="50" />
-                <DataGridTextColumn Header="Cut loss" Binding="{Binding CutLoss, StringFormat='{}{0:F1}'}" Width="70" />
-                <DataGridTemplateColumn Header="Parts" Width="*">
+                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnSeq}" Binding="{Binding Index}" Width="50" />
+                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnCuts}" Binding="{Binding CutCount}" Width="70" />
+                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnCutLoss}" Binding="{Binding CutLoss, StringFormat='{}{0:0.##}'}" Width="110" />
+                <DataGridTemplateColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnParts}" Width="*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Converter={StaticResource BarPartsSummaryConverter}}" VerticalAlignment="Center" Padding="4,0" />
+                            <TextBlock Text="{Binding Converter={StaticResource BarPartsSummaryConverter}}" VerticalAlignment="Center" Padding="6,0" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Remainder" Binding="{Binding Remainder, StringFormat='{}{0:F1}'}" Width="80" />
+                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnRemainder}" Binding="{Binding Remainder, StringFormat='{}{0:0.##}'}" Width="110" />
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

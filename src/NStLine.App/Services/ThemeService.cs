@@ -13,6 +13,9 @@ public static class ThemeService
 {
     public static void Apply(AppTheme theme)
     {
+        if (Application.Current == null)
+            return;
+
         var dictionaries = Application.Current.Resources.MergedDictionaries;
         dictionaries.Clear();
 

@@ -41,6 +41,31 @@ public sealed class ProjectFileServiceTests
     }
 
     [Fact]
+    public void Load_PreservesLegacyZeroCutWidth()
+    {
+        var path = Path.GetTempFileName();
+        try
+        {
+            var legacy = new
+            {
+                Material = new LinearMaterial { Id = "legacy", Name = "Tube", StandardLength = 6000, CutWidth = 3 },
+                BarLength = 6000,
+                CutWidth = 0,
+                Parts = new[] { new PartRequirement { Name = "A", Length = 1000, Quantity = 1 } }
+            };
+            File.WriteAllText(path, JsonSerializer.Serialize(legacy));
+
+            var loaded = new ProjectFileService().Load(path);
+
+            Assert.Equal(0, Assert.Single(loaded.Materials).CutWidth);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
     public void Load_MigratesLegacySingleMaterialProject()
     {
         var path = Path.GetTempFileName();

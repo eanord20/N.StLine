@@ -38,6 +38,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
 
     public string WindowTitle => this["WindowTitle"];
     public string MenuFile => this["MenuFile"];
+    public string MenuEdit => this["MenuEdit"];
     public string MenuOpenProject => this["MenuOpenProject"];
     public string MenuSaveProject => this["MenuSaveProject"];
     public string MenuSettings => this["MenuSettings"];
@@ -55,6 +56,8 @@ public sealed class LocalizationService : INotifyPropertyChanged
     public string ButtonClear => this["ButtonClear"];
     public string ButtonAddRow => this["ButtonAddRow"];
     public string ButtonDeleteRow => this["ButtonDeleteRow"];
+    public string ButtonUndo => this["ButtonUndo"];
+    public string ButtonClose => this["ButtonClose"];
     public string ButtonAdd => this["ButtonAdd"];
     public string ButtonDelete => this["ButtonDelete"];
     public string ButtonCopy => this["ButtonCopy"];
@@ -68,6 +71,18 @@ public sealed class LocalizationService : INotifyPropertyChanged
     public string LabelParts => this["LabelParts"];
     public string LabelLibrary => this["LabelLibrary"];
     public string LabelInTask => this["LabelInTask"];
+    public string LabelTaskMaterials => this["LabelTaskMaterials"];
+    public string EmptyNoMaterials => this["EmptyNoMaterials"];
+    public string EmptyNoParts => this["EmptyNoParts"];
+    public string TooltipAddMaterial => this["TooltipAddMaterial"];
+    public string TooltipRemoveMaterial => this["TooltipRemoveMaterial"];
+    public string ResultWindowTitle => this["ResultWindowTitle"];
+    public string LabelSummary => this["LabelSummary"];
+    public string LabelPatterns => this["LabelPatterns"];
+    public string ColumnCuts => this["ColumnCuts"];
+    public string ColumnCutLoss => this["ColumnCutLoss"];
+    public string ColumnParts => this["ColumnParts"];
+    public string ColumnRemainder => this["ColumnRemainder"];
     public string ColumnSeq => this["ColumnSeq"];
     public string ColumnName => this["ColumnName"];
     public string ColumnLength => this["ColumnLength"];
@@ -85,6 +100,14 @@ public sealed class LocalizationService : INotifyPropertyChanged
     public string ErrorTitle => this["ErrorTitle"];
     public string ErrorInvalidInput => this["ErrorInvalidInput"];
     public string MessagePasteFailed => this["MessagePasteFailed"];
+    public string ConfirmRemoveMaterial => this["ConfirmRemoveMaterial"];
+    public string StatusCalculating => this["StatusCalculating"];
+    public string StatusProjectSaved => this["StatusProjectSaved"];
+    public string StatusProjectLoaded => this["StatusProjectLoaded"];
+    public string ErrorMaterialNotAssigned => this["ErrorMaterialNotAssigned"];
+    public string ErrorLengthPositive => this["ErrorLengthPositive"];
+    public string ErrorQuantityPositive => this["ErrorQuantityPositive"];
+    public string ErrorPartDoesNotFit => this["ErrorPartDoesNotFit"];
 
     private LocalizationService()
     {
@@ -92,6 +115,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
         {
             ["WindowTitle"] = "N.StLine",
             ["MenuFile"] = "File",
+            ["MenuEdit"] = "Edit",
             ["MenuOpenProject"] = "Open project",
             ["MenuSaveProject"] = "Save project",
             ["MenuSettings"] = "Settings",
@@ -109,6 +133,8 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["ButtonClear"] = "Clear",
             ["ButtonAddRow"] = "Add row",
             ["ButtonDeleteRow"] = "Delete row",
+            ["ButtonUndo"] = "Undo",
+            ["ButtonClose"] = "Close",
             ["ButtonAdd"] = "Add",
             ["ButtonDelete"] = "Delete",
             ["ButtonCopy"] = "Copy",
@@ -122,6 +148,18 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["LabelParts"] = "Parts",
             ["LabelLibrary"] = "Library",
             ["LabelInTask"] = "In task",
+            ["LabelTaskMaterials"] = "Task materials",
+            ["EmptyNoMaterials"] = "Add a material from the library to begin",
+            ["EmptyNoParts"] = "Add parts manually or paste them from Excel",
+            ["TooltipAddMaterial"] = "Add material from library",
+            ["TooltipRemoveMaterial"] = "Remove material from task",
+            ["ResultWindowTitle"] = "Cutting result",
+            ["LabelSummary"] = "Summary",
+            ["LabelPatterns"] = "Cutting schemes",
+            ["ColumnCuts"] = "Cuts",
+            ["ColumnCutLoss"] = "Cut loss",
+            ["ColumnParts"] = "Parts",
+            ["ColumnRemainder"] = "Remainder",
             ["ColumnSeq"] = "#",
             ["ColumnName"] = "Name",
             ["ColumnLength"] = "Length, mm",
@@ -138,13 +176,22 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["MaterialsWindowTitle"] = "Materials",
             ["ErrorTitle"] = "Error",
             ["ErrorInvalidInput"] = "Check the input data and try again.",
-            ["MessagePasteFailed"] = "Could not paste data. Make sure it has columns for name, length and quantity."
+            ["MessagePasteFailed"] = "Could not paste data. Make sure it has columns for name, length and quantity.",
+            ["ConfirmRemoveMaterial"] = "Remove '{0}' and all its parts?",
+            ["StatusCalculating"] = "Calculating...",
+            ["StatusProjectSaved"] = "Project saved: {0}",
+            ["StatusProjectLoaded"] = "Project loaded: {0}",
+            ["ErrorMaterialNotAssigned"] = "Material is not assigned.",
+            ["ErrorLengthPositive"] = "Length must be greater than zero.",
+            ["ErrorQuantityPositive"] = "Quantity must be greater than zero.",
+            ["ErrorPartDoesNotFit"] = "Part does not fit into the bar."
         };
 
         _resources["ua"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["WindowTitle"] = "N.StLine",
             ["MenuFile"] = "Файл",
+            ["MenuEdit"] = "Правка",
             ["MenuOpenProject"] = "Відкрити проект",
             ["MenuSaveProject"] = "Зберегти проект",
             ["MenuSettings"] = "Налаштування",
@@ -162,6 +209,8 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["ButtonClear"] = "Очистити",
             ["ButtonAddRow"] = "Додати рядок",
             ["ButtonDeleteRow"] = "Видалити рядок",
+            ["ButtonUndo"] = "Скасувати дію",
+            ["ButtonClose"] = "Закрити",
             ["ButtonAdd"] = "Додати",
             ["ButtonDelete"] = "Видалити",
             ["ButtonCopy"] = "Копіювати",
@@ -175,6 +224,18 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["LabelParts"] = "Деталі",
             ["LabelLibrary"] = "Бібліотека",
             ["LabelInTask"] = "У задачі",
+            ["LabelTaskMaterials"] = "Матеріали задачі",
+            ["EmptyNoMaterials"] = "Додайте матеріал з бібліотеки, щоб почати",
+            ["EmptyNoParts"] = "Додайте деталі вручну або вставте їх з Excel",
+            ["TooltipAddMaterial"] = "Додати матеріал з бібліотеки",
+            ["TooltipRemoveMaterial"] = "Видалити матеріал із задачі",
+            ["ResultWindowTitle"] = "Результат розкрою",
+            ["LabelSummary"] = "Підсумок",
+            ["LabelPatterns"] = "Схеми розкрою",
+            ["ColumnCuts"] = "Різів",
+            ["ColumnCutLoss"] = "Втрати на різ",
+            ["ColumnParts"] = "Деталі",
+            ["ColumnRemainder"] = "Залишок",
             ["ColumnSeq"] = "№",
             ["ColumnName"] = "Назва",
             ["ColumnLength"] = "Довжина, мм",
@@ -191,7 +252,15 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["MaterialsWindowTitle"] = "Матеріали",
             ["ErrorTitle"] = "Помилка",
             ["ErrorInvalidInput"] = "Перевірте вхідні дані та спробуйте ще раз.",
-            ["MessagePasteFailed"] = "Не вдалося вставити дані. Переконайтеся, що є стовпці назви, довжини та кількості."
+            ["MessagePasteFailed"] = "Не вдалося вставити дані. Переконайтеся, що є стовпці назви, довжини та кількості.",
+            ["ConfirmRemoveMaterial"] = "Видалити '{0}' та всі його деталі?",
+            ["StatusCalculating"] = "Виконується розрахунок...",
+            ["StatusProjectSaved"] = "Проект збережено: {0}",
+            ["StatusProjectLoaded"] = "Проект завантажено: {0}",
+            ["ErrorMaterialNotAssigned"] = "Матеріал не призначено.",
+            ["ErrorLengthPositive"] = "Довжина має бути більшою за нуль.",
+            ["ErrorQuantityPositive"] = "Кількість має бути більшою за нуль.",
+            ["ErrorPartDoesNotFit"] = "Деталь не поміщається в заготовку."
         };
     }
 }
