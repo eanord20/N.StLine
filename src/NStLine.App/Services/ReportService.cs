@@ -55,7 +55,9 @@ public sealed class ReportService : IReportService
         InsertParagraph(document, $"Bars: {result.TotalBarCount}; cut loss: {result.TotalCutLoss:F1} mm; remainder: {result.TotalRemainder:F1} mm; utilization: {result.UtilizationPercent:F1}%");
         foreach (var pattern in result.Patterns)
         {
-            var parts = CuttingTextFormatter.FormatGroupedParts(pattern.Parts);
+            var parts = CuttingTextFormatter.FormatGroupedParts(
+                pattern.Parts,
+                lengthUnit: LocalizationService.Instance.UnitMillimeters);
             InsertParagraph(document, $"×{pattern.Multiplicity}: {parts} | remainder {pattern.Remainder:F1}");
         }
     }

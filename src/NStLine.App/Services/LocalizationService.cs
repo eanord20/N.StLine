@@ -55,6 +55,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
     public string ButtonExportDocx => this["ButtonExportDocx"];
     public string ButtonGenerateReport => this["ButtonGenerateReport"];
     public string ButtonBrowse => this["ButtonBrowse"];
+    public string ButtonOpenLastReport => this["ButtonOpenLastReport"];
     public string ButtonClear => this["ButtonClear"];
     public string ButtonAddRow => this["ButtonAddRow"];
     public string ButtonDeleteRow => this["ButtonDeleteRow"];
@@ -70,6 +71,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
     public string LabelMaterial => this["LabelMaterial"];
     public string LabelBarLength => this["LabelBarLength"];
     public string LabelCutWidth => this["LabelCutWidth"];
+    public string UnitMillimeters => this["UnitMillimeters"];
     public string LabelParts => this["LabelParts"];
     public string LabelLibrary => this["LabelLibrary"];
     public string LabelInTask => this["LabelInTask"];
@@ -80,6 +82,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
     public string EmptyNoResult => this["EmptyNoResult"];
     public string TooltipAddMaterial => this["TooltipAddMaterial"];
     public string TooltipRemoveMaterial => this["TooltipRemoveMaterial"];
+    public string TooltipActiveMaterial => this["TooltipActiveMaterial"];
     public string ResultWindowTitle => this["ResultWindowTitle"];
     public string ButtonOpenResult => this["ButtonOpenResult"];
     public string StatusResultStale => this["StatusResultStale"];
@@ -143,6 +146,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["ButtonExportDocx"] = "Export DOCX",
             ["ButtonGenerateReport"] = "Generate report",
             ["ButtonBrowse"] = "Browse",
+            ["ButtonOpenLastReport"] = "Open last report",
             ["ButtonClear"] = "Clear",
             ["ButtonAddRow"] = "Add row",
             ["ButtonDeleteRow"] = "Delete row",
@@ -158,6 +162,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["LabelMaterial"] = "Material",
             ["LabelBarLength"] = "Bar length, mm",
             ["LabelCutWidth"] = "Cut width, mm",
+            ["UnitMillimeters"] = "mm",
             ["LabelParts"] = "Parts",
             ["LabelLibrary"] = "Library",
             ["LabelInTask"] = "In task",
@@ -168,6 +173,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["EmptyNoResult"] = "Calculate the task to see the cutting result",
             ["TooltipAddMaterial"] = "Add material from library",
             ["TooltipRemoveMaterial"] = "Remove material from task",
+            ["TooltipActiveMaterial"] = "Use this material for new rows",
             ["ResultWindowTitle"] = "Cutting result",
             ["ButtonOpenResult"] = "Open separately",
             ["StatusResultStale"] = "Input data changed. Recalculate the task.",
@@ -230,6 +236,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["ButtonExportDocx"] = "Експорт DOCX",
             ["ButtonGenerateReport"] = "Сформувати звіт",
             ["ButtonBrowse"] = "Огляд",
+            ["ButtonOpenLastReport"] = "Відкрити останній звіт",
             ["ButtonClear"] = "Очистити",
             ["ButtonAddRow"] = "Додати рядок",
             ["ButtonDeleteRow"] = "Видалити рядок",
@@ -245,6 +252,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["LabelMaterial"] = "Матеріал",
             ["LabelBarLength"] = "Довжина заготовки, мм",
             ["LabelCutWidth"] = "Ширина різу, мм",
+            ["UnitMillimeters"] = "мм",
             ["LabelParts"] = "Деталі",
             ["LabelLibrary"] = "Бібліотека",
             ["LabelInTask"] = "У задачі",
@@ -255,6 +263,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["EmptyNoResult"] = "Виконайте розрахунок, щоб побачити результат розкрою",
             ["TooltipAddMaterial"] = "Додати матеріал з бібліотеки",
             ["TooltipRemoveMaterial"] = "Видалити матеріал із задачі",
+            ["TooltipActiveMaterial"] = "Використовувати цей матеріал для нових рядків",
             ["ResultWindowTitle"] = "Результат розкрою",
             ["ButtonOpenResult"] = "Відкрити окремо",
             ["StatusResultStale"] = "Вхідні дані змінено. Виконайте розрахунок повторно.",

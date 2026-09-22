@@ -63,6 +63,24 @@ public sealed class MainViewModelUndoTests
     }
 
     [Fact]
+    public void DirectQuantityInputReplacesValueAndIsUndoable()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.AddRowCommand.Execute(null);
+        var row = Assert.Single(viewModel.Parts);
+        row.Quantity = 25;
+        viewModel.ClearUndoHistory();
+
+        viewModel.BeginPartEdit();
+        viewModel.ReplaceQuantityFromKeyboard(row, 7);
+        viewModel.CommitPartEdit();
+
+        Assert.Equal(7, row.Quantity);
+        viewModel.UndoCommand.Execute(null);
+        Assert.Equal(25, Assert.Single(viewModel.Parts).Quantity);
+    }
+
+    [Fact]
     public void UndoRestoresMaterialChangedDuringCellEdit()
     {
         var viewModel = CreateViewModel();

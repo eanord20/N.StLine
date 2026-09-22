@@ -172,12 +172,14 @@
 
                     <Grid Grid.Row="6">
                         <DataGrid x:Name="PartsGrid"
-                                  ItemsSource="{Binding Parts}"
+                                  ItemsSource="{Binding PartsView}"
                                   SelectedItem="{Binding SelectedPart}"
                                   AutoGenerateColumns="False"
                                   CanUserAddRows="False"
                                   CanUserDeleteRows="False"
                                   CanUserSortColumns="False"
+                                  EnableRowVirtualization="False"
+                                  EnableColumnVirtualization="False"
                                   RowHeight="30"
                                   ColumnHeaderHeight="32"
                                   RowStyle="{StaticResource PartRowStyle}"
@@ -186,7 +188,8 @@
                                   VerticalGridLinesBrush="{DynamicResource MaterialDesignDivider}"
                                   BeginningEdit="PartsGrid_BeginningEdit"
                                   CellEditEnding="PartsGrid_CellEditEnding"
-                                  PreviewKeyDown="PartsGrid_PreviewKeyDown">
+                                  PreviewKeyDown="PartsGrid_PreviewKeyDown"
+                                  PreviewTextInput="PartsGrid_PreviewTextInput">
                             <DataGrid.ColumnHeaderStyle>
                                 <Style TargetType="DataGridColumnHeader">
                                     <Setter Property="Background" Value="{DynamicResource MaterialDesignCardBackground}" />
@@ -204,11 +207,14 @@
                                     <Setter Property="Background" Value="Transparent" />
                                 </Style>
                             </DataGrid.CellStyle>
+                            <DataGrid.GroupStyle>
+                                <GroupStyle HeaderTemplate="{StaticResource SectionGroupHeaderTemplate}" />
+                            </DataGrid.GroupStyle>
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnSeq}" Binding="{Binding RowNumber}" Width="45" IsReadOnly="True" />
                                 <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnName}" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" MinWidth="100" />
                                 <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnLength}" Binding="{Binding Length, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="95" />
-                                <DataGridTemplateColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnQuantity}" Width="100">
+                                <DataGridTemplateColumn x:Name="QuantityColumn" Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnQuantity}" Width="100">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Grid>
@@ -386,6 +392,11 @@
         </Grid>
 
         <ProgressBar Grid.Row="5" Value="{Binding ProgressValue, Mode=OneWay}" Maximum="100" Height="4" Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}" />
-        <TextBlock Grid.Row="6" Text="{Binding StatusText}" Margin="2,6,2,0" FontWeight="SemiBold" />
+        <Grid Grid.Row="6" Margin="2,6,2,0">
+            <TextBlock Text="{Binding StatusText}" FontWeight="SemiBold" VerticalAlignment="Center" />
+            <Button HorizontalAlignment="Right" Style="{StaticResource AppToolbarButtonStyle}" Width="Auto"
+                    Command="{Binding OpenLastReportCommand}"
+                    Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonOpenLastReport}" />
+        </Grid>
     </Grid>
 </Window>

@@ -16,7 +16,7 @@ public sealed class CuttingTextFormatterTests
     }
 
     [Fact]
-    public void FormatGroupedParts_GroupsEqualPartsInOriginalOrder()
+    public void FormatGroupedPartsUsesPlusSeparatorAndLengthUnit()
     {
         var first = new PartRequirement { Name = "Stand", Length = 1250 };
         var second = new PartRequirement { Name = "Brace", Length = 850 };
@@ -27,9 +27,9 @@ public sealed class CuttingTextFormatterTests
             new PlacedPart { Source = second }
         };
 
-        var text = CuttingTextFormatter.FormatGroupedParts(parts, CultureInfo.InvariantCulture);
+        var text = CuttingTextFormatter.FormatGroupedParts(parts, CultureInfo.InvariantCulture, "мм");
 
-        Assert.Equal("Stand - 1250 × 2, Brace - 850", text);
+        Assert.Equal("Stand - 1250 мм × 2 + Brace - 850 мм", text);
     }
 
     [Fact]
@@ -48,10 +48,10 @@ public sealed class CuttingTextFormatterTests
             Assert.Contains("Tube", text);
             Assert.Contains("Bars: 1", text);
             Assert.Contains("Total remainder: 4747", text);
-            Assert.Contains("Stand - 1250", text);
+            Assert.Contains("Stand - 1250 mm", text);
             Assert.Contains("Angle", text);
             Assert.Contains("Total remainder: 5147", text);
-            Assert.Contains("Brace - 850", text);
+            Assert.Contains("Brace - 850 mm", text);
         }
         finally
         {

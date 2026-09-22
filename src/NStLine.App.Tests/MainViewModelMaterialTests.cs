@@ -1,3 +1,4 @@
+using System.Windows.Data;
 using NStLine.App.Models;
 using NStLine.App.Services;
 using NStLine.App.ViewModels;
@@ -22,11 +23,47 @@ public sealed class MainViewModelMaterialTests
 
         Assert.Equal("second", viewModel.ActiveMaterialId);
         Assert.Equal(["first", "second"], viewModel.Parts.Select(row => row.MaterialId));
-        Assert.Equal([1, 2], viewModel.Parts.Select(row => row.RowNumber));
+        Assert.Equal([1, 1], viewModel.Parts.Select(row => row.RowNumber));
+        Assert.Equal(["first", "second"], viewModel.PartsView.Groups!.Cast<CollectionViewGroup>().Select(group => group.Name));
 
         viewModel.SetActiveMaterialCommand.Execute("first");
 
         Assert.Equal(2, viewModel.Parts.Count);
+    }
+
+    [Fact]
+    public void ChangingMaterialMovesRowToItsSectionAndRenumbersRows()
+    {
+        var first = Material("first", "Tube");
+        var second = Material("second", "Angle");
+        var viewModel = CreateViewModel(first, second);
+        viewModel.AddMaterialCommand.Execute(first);
+        viewModel.AddRowCommand.Execute(null);
+        viewModel.AddMaterialCommand.Execute(second);
+        viewModel.AddRowCommand.Execute(null);
+        var movedRow = viewModel.Parts[1];
+
+        viewModel.BeginPartEdit();
+        movedRow.MaterialId = "first";
+        viewModel.CommitPartEdit();
+
+        Assert.Single(viewModel.PartsView.Groups!);
+        Assert.Equal("first", ((CollectionViewGroup)viewModel.PartsView.Groups![0]).Name);
+        Assert.Equal([1, 2], viewModel.Parts.Where(row => row.MaterialId == "first").Select(row => row.RowNumber));
+    }
+
+    [Fact]
+    public void GroupHeaderCanActivateMaterialByName()
+    {
+        var first = Material("first", "Tube");
+        var second = Material("second", "Angle");
+        var viewModel = CreateViewModel(first, second);
+        viewModel.AddMaterialCommand.Execute(first);
+        viewModel.AddMaterialCommand.Execute(second);
+
+        viewModel.SetActiveMaterialCommand.Execute("Tube");
+
+        Assert.Equal("first", viewModel.ActiveMaterialId);
     }
 
     [Fact]

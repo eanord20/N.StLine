@@ -59,6 +59,8 @@ public sealed class MainViewModelCalculationTests
             Assert.Equal(outputFolder, Path.GetDirectoryName(reports.OutputPath));
             Assert.Matches(new Regex(@"^N\.StLine_Report_\d{4}-\d{2}-\d{2}_\d{6}\.docx$"), Path.GetFileName(reports.OutputPath));
             Assert.Equal(outputFolder, settings.Saved?.ReportOutputPath);
+            Assert.Equal(reports.OutputPath, viewModel.LastReportPath);
+            Assert.True(viewModel.OpenLastReportCommand.CanExecute(null));
         }
         finally
         {
@@ -124,7 +126,10 @@ public sealed class MainViewModelCalculationTests
         public string? OutputPath { get; private set; }
 
         public void GenerateReport(string outputPath, ProjectCuttingTask task, ProjectCuttingResult result)
-            => OutputPath = outputPath;
+        {
+            OutputPath = outputPath;
+            File.WriteAllText(outputPath, string.Empty);
+        }
     }
 
     private sealed class MemoryMaterialsLibraryService : IMaterialsLibraryService

@@ -7,15 +7,21 @@ namespace NStLine.App.Formatters;
 
 public static class CuttingTextFormatter
 {
-    public static string FormatPart(string? name, double length, IFormatProvider? formatProvider = null)
+    public static string FormatPart(
+        string? name,
+        double length,
+        IFormatProvider? formatProvider = null,
+        string? lengthUnit = null)
     {
         var displayName = string.IsNullOrWhiteSpace(name) ? "Part" : name.Trim();
-        return $"{displayName} - {length.ToString("0.##", formatProvider ?? CultureInfo.CurrentCulture)}";
+        var unitSuffix = string.IsNullOrWhiteSpace(lengthUnit) ? string.Empty : $" {lengthUnit}";
+        return $"{displayName} - {length.ToString("0.##", formatProvider ?? CultureInfo.CurrentCulture)}{unitSuffix}";
     }
 
     public static string FormatGroupedParts(
         IEnumerable<PlacedPart> parts,
-        IFormatProvider? formatProvider = null)
+        IFormatProvider? formatProvider = null,
+        string? lengthUnit = null)
     {
         var groups = parts
             .Select((part, index) => new { Part = part, Index = index })
@@ -23,12 +29,12 @@ public static class CuttingTextFormatter
             .OrderBy(group => group.Min(x => x.Index))
             .Select(group =>
             {
-                var text = FormatPart(group.Key.Name, group.Key.Length, formatProvider);
+                var text = FormatPart(group.Key.Name, group.Key.Length, formatProvider, lengthUnit);
                 var count = group.Count();
                 return count > 1 ? $"{text} × {count}" : text;
             });
 
-        return string.Join(", ", groups);
+        return string.Join(" + ", groups);
     }
 
     public static string FormatProjectResult(
@@ -53,7 +59,7 @@ public static class CuttingTextFormatter
                 material.TotalRemainder, material.UtilizationPercent, localization, provider);
             foreach (var bar in material.Bars)
             {
-                var parts = FormatGroupedParts(bar.Parts, provider);
+                var parts = FormatGroupedParts(bar.Parts, provider, localization.UnitMillimeters);
                 text.AppendLine($"{bar.Index}. {bar.BarLength.ToString("0.##", provider)} ({bar.CutCount}) = {parts} + {bar.Remainder.ToString("0.##", provider)}");
             }
         }
