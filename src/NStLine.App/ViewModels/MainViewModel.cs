@@ -396,8 +396,18 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void RefreshPartsView()
     {
-        if (PartsView.Dispatcher.CheckAccess())
-            PartsView.Refresh();
+        if (!PartsView.Dispatcher.CheckAccess())
+            return;
+
+        if (PartsView.IsAddingNew || PartsView.IsEditingItem)
+        {
+            PartsView.Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.ContextIdle,
+                new Action(RefreshPartsView));
+            return;
+        }
+
+        PartsView.Refresh();
     }
 
     internal int GetMaterialOrder(string materialId)

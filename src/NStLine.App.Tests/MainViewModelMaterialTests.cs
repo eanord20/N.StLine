@@ -1,4 +1,5 @@
 using System.Windows.Data;
+using System.Windows.Threading;
 using NStLine.App.Models;
 using NStLine.App.Services;
 using NStLine.App.ViewModels;
@@ -111,6 +112,42 @@ public sealed class MainViewModelMaterialTests
         var available = viewModel.AvailableLibraryMaterials.ToList();
         Assert.DoesNotContain(available, x => x.Id == first.Id);
         Assert.Contains(available, x => x.Id == second.Id);
+    }
+
+    [Fact]
+    public void CommitDuringActiveViewEditDefersRefreshWithoutCrashing()
+    {
+        var first = Material("first", "Tube");
+        var second = Material("second", "Angle");
+        var viewModel = CreateViewModel(first, second);
+        viewModel.AddMaterialCommand.Execute(first);
+        viewModel.AddRowCommand.Execute(null);
+        viewModel.AddMaterialCommand.Execute(second);
+        viewModel.AddRowCommand.Execute(null);
+        var movedRow = viewModel.Parts[1];
+
+        viewModel.BeginPartEdit();
+        movedRow.MaterialId = "first";
+        viewModel.PartsView.EditItem(movedRow);
+
+        viewModel.CommitPartEdit();
+
+        viewModel.PartsView.CommitEdit();
+        PumpDispatcher();
+
+        var groups = viewModel.PartsView.Groups!.Cast<CollectionViewGroup>().ToList();
+        Assert.Single(groups);
+        Assert.Equal("first", groups[0].Name);
+        Assert.Equal([1, 2], viewModel.Parts.Where(row => row.MaterialId == "first").Select(row => row.RowNumber));
+    }
+
+    private static void PumpDispatcher()
+    {
+        var frame = new DispatcherFrame();
+        Dispatcher.CurrentDispatcher.BeginInvoke(
+            DispatcherPriority.ContextIdle,
+            new Action(() => frame.Continue = false));
+        Dispatcher.PushFrame(frame);
     }
 
     private static MainViewModel CreateViewModel(params LinearMaterial[] materials)
