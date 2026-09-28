@@ -5,6 +5,7 @@
         xmlns:views="clr-namespace:NStLine.App.Views"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         Title="{Binding WindowTitle}"
+        Icon="pack://application:,,,/Resources/logo.png"
         Height="720" Width="1280"
         WindowState="Maximized"
         Background="{DynamicResource WindowBackgroundBrush}"
@@ -62,6 +63,9 @@
             <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuTheme}">
                 <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuThemeLight}" Command="{Binding SetThemeCommand}" CommandParameter="Light" />
                 <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuThemeDark}" Command="{Binding SetThemeCommand}" CommandParameter="Dark" />
+            </MenuItem>
+            <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuHelp}">
+                <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuAbout}" Command="{Binding AboutCommand}" />
             </MenuItem>
         </Menu>
 

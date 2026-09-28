@@ -48,6 +48,11 @@ public sealed class LocalizationService : INotifyPropertyChanged
     public string MenuUkrainian => this["MenuUkrainian"];
     public string MenuThemeLight => this["MenuThemeLight"];
     public string MenuThemeDark => this["MenuThemeDark"];
+    public string MenuHelp => this["MenuHelp"];
+    public string MenuAbout => this["MenuAbout"];
+    public string AboutWindowTitle => this["AboutWindowTitle"];
+    public string AboutVersion => this["AboutVersion"];
+    public string AboutDescription => this["AboutDescription"];
     public string ButtonMaterials => this["ButtonMaterials"];
     public string ButtonPaste => this["ButtonPaste"];
     public string ButtonCalculate => this["ButtonCalculate"];
@@ -139,6 +144,11 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["MenuUkrainian"] = "Українська",
             ["MenuThemeLight"] = "Light",
             ["MenuThemeDark"] = "Dark",
+            ["MenuHelp"] = "Help",
+            ["MenuAbout"] = "About",
+            ["AboutWindowTitle"] = "About",
+            ["AboutVersion"] = "Version",
+            ["AboutDescription"] = "Optimization of linear material cutting.",
             ["ButtonMaterials"] = "Materials",
             ["ButtonPaste"] = "Paste Excel",
             ["ButtonCalculate"] = "Calculate",
@@ -229,6 +239,11 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["MenuUkrainian"] = "Українська",
             ["MenuThemeLight"] = "Світла",
             ["MenuThemeDark"] = "Темна",
+            ["MenuHelp"] = "Довідка",
+            ["MenuAbout"] = "Про програму",
+            ["AboutWindowTitle"] = "Про програму",
+            ["AboutVersion"] = "Версія",
+            ["AboutDescription"] = "Оптимізація лінійного розкрою матеріалів.",
             ["ButtonMaterials"] = "Матеріали",
             ["ButtonPaste"] = "Вставити Excel",
             ["ButtonCalculate"] = "Розрахувати",

@@ -91,6 +91,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ClearAllCommand = new RelayCommand(_ => ClearAll(), _ => Parts.Count > 0 || ProjectMaterials.Count > 0);
         SaveProjectCommand = new RelayCommand(_ => SaveProject(), _ => CanSaveProject());
         OpenProjectCommand = new RelayCommand(_ => OpenProject());
+        AboutCommand = new RelayCommand(_ => OpenAbout());
         SetLanguageCommand = new RelayCommand(lang => SetLanguage(lang?.ToString() ?? "en"));
         SetThemeCommand = new RelayCommand(theme =>
         {
@@ -245,6 +246,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ICommand OpenProjectCommand { get; }
     public ICommand SetLanguageCommand { get; }
     public ICommand SetThemeCommand { get; }
+    public ICommand AboutCommand { get; }
 
     public string WindowTitle => _localization.WindowTitle;
     public string ButtonMaterials => _localization.ButtonMaterials;
@@ -741,6 +743,15 @@ public sealed class MainViewModel : INotifyPropertyChanged
             LoadLibrary();
             OnPropertyChanged(nameof(AvailableLibraryMaterials));
         }
+    }
+
+    private void OpenAbout()
+    {
+        var dialog = new Views.AboutWindow
+        {
+            Owner = Application.Current.MainWindow
+        };
+        dialog.ShowDialog();
     }
 
     private void ClearAll()

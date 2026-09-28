@@ -60,6 +60,28 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
+    private void CommitAndMoveDown()
+    {
+        var cellInfo = PartsGrid.CurrentCell;
+        PartsGrid.CommitEdit(DataGridEditingUnit.Cell, false);
+        PartsGrid.CommitEdit(DataGridEditingUnit.Row, false);
+
+        var rowIndex = PartsGrid.Items.IndexOf(cellInfo.Item);
+        if (rowIndex < 0 || PartsGrid.Items.Count == 0)
+            return;
+
+        var nextIndex = rowIndex + 1 < PartsGrid.Items.Count ? rowIndex + 1 : 0;
+        var nextItem = PartsGrid.Items[nextIndex];
+        PartsGrid.SelectedItem = nextItem;
+        PartsGrid.CurrentCell = new DataGridCellInfo(nextItem, cellInfo.Column);
+        PartsGrid.ScrollIntoView(nextItem);
+        Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
+        {
+            PartsGrid.Focus();
+            PartsGrid.BeginEdit();
+        });
+    }
+
     private static T? FindVisualChild<T>(DependencyObject? parent) where T : DependencyObject
     {
         if (parent == null)
@@ -91,6 +113,13 @@ public partial class MainWindow : Window
                 ViewModel.UndoCommand.Execute(null);
                 e.Handled = true;
             }
+            return;
+        }
+
+        if (e.Key == Key.Enter && PartsGrid.CurrentCell.IsValid)
+        {
+            CommitAndMoveDown();
+            e.Handled = true;
             return;
         }
 
