@@ -1,3 +1,4 @@
+using System.Runtime.ExceptionServices;
 using NStLine.Core.Contracts;
 using NStLine.Core.Models;
 
@@ -5,27 +6,43 @@ namespace NStLine.Cutting.Services;
 
 public sealed class CuttingEngine : ICuttingEngine
 {
+    private const int SolverStackSizeBytes = 64 * 1024 * 1024;
+
     public CuttingResult Solve(CuttingTask task, CuttingOptions options, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         Validate(task);
 
-        // Try exact solver first if the pattern space is not too large.
-        var exactSolver = new ExactPatternSolver(task, options, cancellationToken);
-        CuttingResult? exactResult;
-
-        try
-        {
-            exactResult = exactSolver.Solve();
-        }
-        catch (OperationCanceledException)
-        {
-            exactResult = null;
-        }
-
+        // The heuristic runs first: its result seeds the exact solver with an
+        // incumbent bound, which prunes most of the branch-and-bound tree.
         var heuristicResult = FirstFitDecreasingSolver.Solve(task, options);
 
+        var exactSolver = new ExactPatternSolver(task, options, cancellationToken);
+        exactSolver.SetIncumbent(heuristicResult.TotalBarCount, heuristicResult.TotalRemainder);
+
+        var exactResult = RunWithLargeStack(() =>
+        {
+            try
+            {
+                return exactSolver.Solve();
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
+        });
+
         if (exactResult == null)
+        {
+            // Exhaustive search completed without finding anything better than
+            // the heuristic: the heuristic result is proven optimal.
+            if (exactSolver.SearchCompleted)
+            {
+                heuristicResult.Status = CalculationStatus.Optimal;
+                heuristicResult.Method = "Exact branch-and-bound";
+            }
+
             return heuristicResult;
+        }
 
         // If the exact solver proved optimality, prefer it even if the heuristic is equally good.
         if (exactResult.Status == CalculationStatus.Optimal)
@@ -37,6 +54,39 @@ public sealed class CuttingEngine : ICuttingEngine
                             exactResult.TotalRemainder < heuristicResult.TotalRemainder);
 
         return exactBetter ? exactResult : heuristicResult;
+    }
+
+    private static CuttingResult? RunWithLargeStack(Func<CuttingResult?> work)
+    {
+        // The branch-and-bound recursion depth equals the pattern count and can
+        // overflow the default 1 MB stack on large inputs. A dedicated thread
+        // with an enlarged stack turns a fatal StackOverflowException into a
+        // normal deep recursion.
+        CuttingResult? result = null;
+        Exception? failure = null;
+
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                result = work();
+            }
+            catch (Exception e)
+            {
+                failure = e;
+            }
+        }, SolverStackSizeBytes)
+        {
+            IsBackground = true
+        };
+
+        thread.Start();
+        thread.Join();
+
+        if (failure != null)
+            ExceptionDispatchInfo.Capture(failure).Throw();
+
+        return result;
     }
 
     private static void Validate(CuttingTask task)

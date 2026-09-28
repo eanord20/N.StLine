@@ -215,10 +215,10 @@
                                 <GroupStyle HeaderTemplate="{StaticResource SectionGroupHeaderTemplate}" />
                             </DataGrid.GroupStyle>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnSeq}" Binding="{Binding RowNumber}" Width="45" IsReadOnly="True" />
-                                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnName}" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" MinWidth="100" />
-                                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnLength}" Binding="{Binding Length, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="95" />
-                                <DataGridTemplateColumn x:Name="QuantityColumn" Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnQuantity}" Width="100">
+                                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnSeq}" Binding="{Binding RowNumber}" Width="50" MinWidth="45" IsReadOnly="True" />
+                                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnName}" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" MinWidth="160" />
+                                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnLength}" Binding="{Binding Length, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="110" MinWidth="95" />
+                                <DataGridTemplateColumn x:Name="QuantityColumn" Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnQuantity}" Width="115" MinWidth="100">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Grid>
@@ -257,7 +257,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellEditingTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnMaterial}" Width="130">
+                                <DataGridTemplateColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnMaterial}" Width="170" MinWidth="140">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <ComboBox ItemsSource="{Binding DataContext.ProjectMaterials, RelativeSource={RelativeSource AncestorType=Window}}"

@@ -64,6 +64,28 @@ public sealed class ProjectCuttingEngineTests
         Assert.Contains("missing", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void Solve_HeuristicSeededIncumbentIsMarkedOptimalWhenProven()
+    {
+        var material = Material("first", "Tube", 6000, 3);
+        var task = new ProjectCuttingTask
+        {
+            Materials = [material],
+            Parts =
+            [
+                Part("A", 1450, 3, material.Id),
+                Part("B", 1200, 3, material.Id),
+                Part("C", 980, 2, material.Id),
+                Part("D", 760, 2, material.Id)
+            ]
+        };
+
+        var result = new ProjectCuttingEngine(new CuttingEngine()).Solve(task, Options());
+
+        Assert.Equal(CalculationStatus.Optimal, result.Status);
+        Assert.True(result.TotalBarCount > 0);
+    }
+
     private static LinearMaterial Material(string id, string name, double length, double cutWidth)
         => new() { Id = id, Name = name, StandardLength = length, CutWidth = cutWidth };
 

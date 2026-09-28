@@ -31,6 +31,14 @@ internal sealed class ExactPatternSolver
         _timeLimit = TimeSpan.FromSeconds(options.TimeLimitSeconds);
     }
 
+    public bool SearchCompleted { get; private set; }
+
+    public void SetIncumbent(int barCount, double totalRemainder)
+    {
+        _bestBarCount = barCount;
+        _bestRemainder = totalRemainder;
+    }
+
     public CuttingResult? Solve()
     {
         if (!GeneratePatterns())
@@ -49,6 +57,7 @@ internal sealed class ExactPatternSolver
         try
         {
             Search(0, demand, 0, 0.0, chosen);
+            SearchCompleted = true;
         }
         catch (OperationCanceledException)
         {

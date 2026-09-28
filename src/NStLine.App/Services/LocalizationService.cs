@@ -52,7 +52,10 @@ public sealed class LocalizationService : INotifyPropertyChanged
     public string MenuAbout => this["MenuAbout"];
     public string AboutWindowTitle => this["AboutWindowTitle"];
     public string AboutVersion => this["AboutVersion"];
+    public string AboutAuthor => this["AboutAuthor"];
+    public string AboutContact => this["AboutContact"];
     public string AboutDescription => this["AboutDescription"];
+    public string AboutCopyright => this["AboutCopyright"];
     public string ButtonMaterials => this["ButtonMaterials"];
     public string ButtonPaste => this["ButtonPaste"];
     public string ButtonCalculate => this["ButtonCalculate"];
@@ -148,7 +151,10 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["MenuAbout"] = "About",
             ["AboutWindowTitle"] = "About",
             ["AboutVersion"] = "Version",
-            ["AboutDescription"] = "Optimization of linear material cutting.",
+            ["AboutAuthor"] = "Author",
+            ["AboutContact"] = "Contact",
+            ["AboutDescription"] = "N.StLine is a tool designed for cutting optimization of long stock materials, such as pipes, profiles, and structural sections.",
+            ["AboutCopyright"] = "© 2026 Nikolay Sukhomlin. All rights reserved. The program is free.",
             ["ButtonMaterials"] = "Materials",
             ["ButtonPaste"] = "Paste Excel",
             ["ButtonCalculate"] = "Calculate",
@@ -243,7 +249,10 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["MenuAbout"] = "Про програму",
             ["AboutWindowTitle"] = "Про програму",
             ["AboutVersion"] = "Версія",
-            ["AboutDescription"] = "Оптимізація лінійного розкрою матеріалів.",
+            ["AboutAuthor"] = "Автор",
+            ["AboutContact"] = "Контакт",
+            ["AboutDescription"] = "N.StLine — інструмент для оптимізації розкрою довгомірних матеріалів: труб, профілів та конструкційних елементів.",
+            ["AboutCopyright"] = "© 2026 Nikolay Sukhomlin. Усі права захищено. Програма безкоштовна.",
             ["ButtonMaterials"] = "Матеріали",
             ["ButtonPaste"] = "Вставити Excel",
             ["ButtonCalculate"] = "Розрахувати",
