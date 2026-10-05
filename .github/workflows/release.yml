@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Read version from tag
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          if ($version -notmatch '^\d+\.\d+\.\d+$') {
+            throw "Tag must have the vMAJOR.MINOR.PATCH format."
+          }
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Restore
+        run: dotnet restore src/NStLine.slnx
+
+      - name: Build
+        run: dotnet build src/NStLine.slnx -c Release --no-restore -p:Version=${{ env.VERSION }}
+
+      - name: Test
+        run: dotnet test src/NStLine.slnx -c Release --no-build -p:Version=${{ env.VERSION }}
+
+      - name: Publish self-contained application
+        run: >-
+          dotnet publish src/NStLine.App/NStLine.App.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:Version=${{ env.VERSION }}
+          -o artifacts/publish/win-x64
+
+      - name: Install Inno Setup
+        run: choco install innosetup --version=6.7.3 --no-progress --yes
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" `
+            "/DAppVersion=${{ env.VERSION }}" `
+            "/DPublishDir=$((Resolve-Path 'artifacts/publish/win-x64').Path)" `
+            "/DOutputDir=$((New-Item 'artifacts/installer' -ItemType Directory -Force).FullName)" `
+            "installer/NStLine.iss"
+
+      - name: Package portable build and checksums
+        shell: pwsh
+        run: |
+          New-Item artifacts/release -ItemType Directory -Force | Out-Null
+          $zip = "artifacts/release/N.StLine-${{ env.VERSION }}-win-x64-portable.zip"
+          Compress-Archive -Path artifacts/publish/win-x64/* -DestinationPath $zip
+          Copy-Item artifacts/installer/*.exe artifacts/release/
+          Get-ChildItem artifacts/release -File | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $($_.Name)" | Add-Content artifacts/release/SHA256SUMS.txt
+          }
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $assets = Get-ChildItem artifacts/release -File | ForEach-Object { $_.FullName }
+          gh release create "${{ github.ref_name }}" $assets `
+            --repo "${{ github.repository }}" `
+            --title "N.StLine ${{ env.VERSION }}" `
+            --generate-notes

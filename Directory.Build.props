@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <Authors>Nikolay Sukhomlin</Authors>
+    <Company>Nikolay Sukhomlin</Company>
+    <Copyright>Copyright © 2026 Nikolay Sukhomlin</Copyright>
+    <Product>N.StLine</Product>
+    <RepositoryUrl>https://github.com/eanord20/N.StLine</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+</Project>
