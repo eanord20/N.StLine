@@ -11,6 +11,7 @@ public sealed class CuttingEngine : ICuttingEngine
     public CuttingResult Solve(CuttingTask task, CuttingOptions options, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         Validate(task);
+        cancellationToken.ThrowIfCancellationRequested();
 
         // The heuristic runs first: its result seeds the exact solver with an
         // incumbent bound, which prunes most of the branch-and-bound tree.
@@ -33,13 +34,32 @@ public sealed class CuttingEngine : ICuttingEngine
 
         if (exactResult == null)
         {
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException(cancellationToken);
+
             // Exhaustive search completed without finding anything better than
             // the heuristic: the heuristic result is proven optimal.
             if (exactSolver.SearchCompleted)
             {
                 heuristicResult.Status = CalculationStatus.Optimal;
                 heuristicResult.Method = "Exact branch-and-bound";
+                heuristicResult.BestFoundReason = BestFoundReason.None;
             }
+            else
+            {
+                heuristicResult.Status = CalculationStatus.BestFound;
+                heuristicResult.BestFoundReason = exactSolver.PatternLimitReached
+                    ? BestFoundReason.PatternLimitReached
+                    : exactSolver.TimeLimitReached
+                        ? BestFoundReason.TimeLimitReached
+                        : BestFoundReason.ExactNotCompleted;
+            }
+
+            heuristicResult.ExploredNodes = exactSolver.ExploredNodes;
+            heuristicResult.GeneratedPatterns = exactSolver.GeneratedPatterns;
+            heuristicResult.PrunedByBarBound = exactSolver.PrunedByBarBound;
+            heuristicResult.PrunedByRemainderBound = exactSolver.PrunedByRemainderBound;
+            heuristicResult.ElapsedSeconds = exactSolver.ElapsedSeconds;
 
             return heuristicResult;
         }
@@ -53,7 +73,12 @@ public sealed class CuttingEngine : ICuttingEngine
                            (exactResult.TotalBarCount == heuristicResult.TotalBarCount &&
                             exactResult.TotalRemainder < heuristicResult.TotalRemainder);
 
-        return exactBetter ? exactResult : heuristicResult;
+        if (exactBetter)
+            return exactResult;
+
+        if (exactResult.Status == CalculationStatus.BestFound)
+            heuristicResult.BestFoundReason = exactResult.BestFoundReason;
+        return heuristicResult;
     }
 
     private static CuttingResult? RunWithLargeStack(Func<CuttingResult?> work)

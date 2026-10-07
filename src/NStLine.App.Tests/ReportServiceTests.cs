@@ -31,6 +31,7 @@ public sealed class ReportServiceTests
             var text = string.Join("\n", document.Paragraphs.Select(x => x.Text));
             Assert.Contains("Tube", text);
             Assert.Contains("Angle", text);
+            Assert.Contains("REQUIRED BARS:", text);
             Assert.Contains("Stand - 1250", text);
             Assert.Contains("Brace - 850", text);
 

@@ -140,6 +140,42 @@ public class ReferenceTaskTests
         Assert.True(result.UtilizationPercent > 0);
     }
 
+    [Fact]
+    public void PatternLimitReached_SetsBestFoundReason()
+    {
+        var task = Task(6000, 3,
+            ("A", 1000, 3),
+            ("B", 850, 2));
+
+        var options = Options();
+        options.MaxPatternCount = 0;
+
+        var result = Engine.Solve(task, options);
+
+        Assert.Equal(CalculationStatus.BestFound, result.Status);
+        Assert.Equal(BestFoundReason.PatternLimitReached, result.BestFoundReason);
+    }
+
+    [Fact]
+    public void TimeLimitReached_SetsBestFoundReason()
+    {
+        var task = Task(6000, 3,
+            ("P1", 920, 35),
+            ("P2", 760, 40),
+            ("P3", 510, 28),
+            ("P4", 450, 22),
+            ("P5", 310, 50));
+
+        var options = Options();
+        options.TimeLimitSeconds = 0.001;
+        options.MaxPatternCount = 1_000_000;
+
+        var result = Engine.Solve(task, options);
+
+        Assert.Equal(CalculationStatus.BestFound, result.Status);
+        Assert.Equal(BestFoundReason.TimeLimitReached, result.BestFoundReason);
+    }
+
     private static CuttingTask Task(double barLength, double cutWidth, params (string Name, double Length, int Quantity)[] parts)
     {
         return new CuttingTask

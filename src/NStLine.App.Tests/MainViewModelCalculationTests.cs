@@ -69,6 +69,31 @@ public sealed class MainViewModelCalculationTests
         }
     }
 
+    [Fact]
+    public async Task CalculateAsync_ShowsBestFoundReasonDetails()
+    {
+        var material = new LinearMaterial
+        {
+            Id = "material",
+            Name = "Tube",
+            StandardLength = 6000,
+            CutWidth = 3
+        };
+        var viewModel = new MainViewModel(
+            new BestFoundProjectCuttingEngine(),
+            new MemoryMaterialsLibraryService(material),
+            null,
+            new MemorySettingsService(new AppSettings()));
+        viewModel.AddMaterialCommand.Execute(material);
+        viewModel.AddRowCommand.Execute(null);
+        var row = Assert.Single(viewModel.Parts);
+        row.Length = 1000;
+
+        await viewModel.CalculateAsync();
+
+        Assert.Equal(LocalizationService.Instance.StatusBestFoundTimeLimit, viewModel.CurrentResultStatusDetails);
+    }
+
     private static (MainViewModel ViewModel, RecordingReportService Reports, MemorySettingsService Settings) CreateViewModel(string reportOutputPath = "")
     {
         var material = new LinearMaterial
@@ -115,6 +140,37 @@ public sealed class MainViewModelCalculationTests
                         Material = material,
                         Task = cuttingTask,
                         Result = new CuttingResult { Status = CalculationStatus.Optimal }
+                    }
+                ]
+            };
+        }
+    }
+
+    private sealed class BestFoundProjectCuttingEngine : IProjectCuttingEngine
+    {
+        public ProjectCuttingResult Solve(ProjectCuttingTask task, CuttingOptions options, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+        {
+            var material = Assert.Single(task.Materials);
+            var cuttingTask = new CuttingTask
+            {
+                Material = material,
+                BarLength = material.StandardLength,
+                CutWidth = material.CutWidth,
+                Parts = task.Parts
+            };
+            return new ProjectCuttingResult
+            {
+                Materials =
+                [
+                    new MaterialCuttingResult
+                    {
+                        Material = material,
+                        Task = cuttingTask,
+                        Result = new CuttingResult
+                        {
+                            Status = CalculationStatus.BestFound,
+                            BestFoundReason = BestFoundReason.TimeLimitReached
+                        }
                     }
                 ]
             };

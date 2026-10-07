@@ -11,27 +11,47 @@ internal sealed class ExactPatternSolver
     private readonly int _partTypeCount;
     private readonly List<Pattern> _patterns = new();
     private readonly int[] _maxCountsPerType;
+    private int[][]? _suffixMaxCounts;
 
     private int _bestBarCount = int.MaxValue;
     private double _bestRemainder = double.MaxValue;
     private List<(Pattern Pattern, int Multiplicity)> _bestSolution = new();
     private long _nodeCount;
+    private long _prunedByBarBound;
+    private long _prunedByRemainderBound;
+    private long _prunedByDominance;
     private readonly Stopwatch _stopwatch = new();
     private readonly TimeSpan _timeLimit;
     private readonly CancellationToken _cancellationToken;
+    private bool _patternLimitReached;
+    private bool _timeLimitReached;
+    private readonly Dictionary<StateKey, PrefixCost> _stateCache = new(StateKeyComparer.Instance);
+    private const int MaxStateCacheEntries = 200_000;
 
     public ExactPatternSolver(CuttingTask task, CuttingOptions options, CancellationToken cancellationToken)
     {
         _task = task;
         _options = options;
         _cancellationToken = cancellationToken;
-        _parts = task.Parts;
+        _parts = task.Parts
+            .OrderByDescending(part => part.Length)
+            .ThenByDescending(part => part.Quantity)
+            .ThenBy(part => part.Id, StringComparer.Ordinal)
+            .ToList();
         _partTypeCount = task.Parts.Count;
         _maxCountsPerType = new int[_partTypeCount];
         _timeLimit = TimeSpan.FromSeconds(options.TimeLimitSeconds);
     }
 
     public bool SearchCompleted { get; private set; }
+    public bool PatternLimitReached => _patternLimitReached;
+    public bool TimeLimitReached => _timeLimitReached;
+    public long ExploredNodes => _nodeCount;
+    public long GeneratedPatterns => _patterns.Count;
+    public long PrunedByBarBound => _prunedByBarBound;
+    public long PrunedByRemainderBound => _prunedByRemainderBound;
+    public long PrunedByDominance => _prunedByDominance;
+    public double ElapsedSeconds => _stopwatch.Elapsed.TotalSeconds;
 
     public void SetIncumbent(int barCount, double totalRemainder)
     {
@@ -41,21 +61,23 @@ internal sealed class ExactPatternSolver
 
     public CuttingResult? Solve()
     {
-        if (!GeneratePatterns())
-            return null;
-
-        if (_patterns.Count == 0)
-            return null;
-
-        ComputeMaxCounts();
-        SortPatterns();
+        if (!_stopwatch.IsRunning)
+            _stopwatch.Start();
 
         var demand = _parts.Select(p => p.Quantity).ToArray();
         var chosen = new Stack<(Pattern Pattern, int Multiplicity)>();
 
-        _stopwatch.Start();
         try
         {
+            if (!GeneratePatterns())
+                return null;
+
+            if (_patterns.Count == 0)
+                return null;
+
+        ComputeMaxCounts();
+        SortPatterns();
+        BuildSuffixMaxCounts();
             Search(0, demand, 0, 0.0, chosen);
             SearchCompleted = true;
         }
@@ -83,6 +105,12 @@ internal sealed class ExactPatternSolver
 
     private void GenerateRecursive(int index, double usedLength, int partCount, int[] counts)
     {
+        if (_stopwatch.Elapsed >= _timeLimit)
+        {
+            _timeLimitReached = true;
+            throw new OperationCanceledException();
+        }
+
         if (index == _partTypeCount)
         {
             if (partCount == 0)
@@ -108,7 +136,7 @@ internal sealed class ExactPatternSolver
             double available = _task.BarLength - usedLength - partCount * _task.CutWidth;
             maxCount = (int)Math.Floor(available / denominator);
         }
-        maxCount = Math.Max(0, maxCount);
+        maxCount = Math.Min(_parts[index].Quantity, Math.Max(0, maxCount));
 
         for (int c = maxCount; c >= 0; c--)
         {
@@ -116,7 +144,10 @@ internal sealed class ExactPatternSolver
                 return;
 
             if (_patterns.Count > _options.MaxPatternCount)
+            {
+                _patternLimitReached = true;
                 return;
+            }
 
             counts[index] = c;
             GenerateRecursive(index + 1,
@@ -158,6 +189,8 @@ internal sealed class ExactPatternSolver
     {
         if (_cancellationToken.IsCancellationRequested || _stopwatch.Elapsed >= _timeLimit)
         {
+            if (_stopwatch.Elapsed >= _timeLimit)
+                _timeLimitReached = true;
             throw new OperationCanceledException();
         }
 
@@ -185,18 +218,51 @@ internal sealed class ExactPatternSolver
         if (_nodeCount % 1024 == 0)
         {
             if (_cancellationToken.IsCancellationRequested || _stopwatch.Elapsed >= _timeLimit)
+            {
+                if (_stopwatch.Elapsed >= _timeLimit)
+                    _timeLimitReached = true;
                 throw new OperationCanceledException();
+            }
         }
 
         // Lower bound on additional bars.
-        int lowerBound = ComputeLowerBound(remaining);
+        int lowerBound = ComputeLowerBound(remaining, patternIndex);
+        if (lowerBound == int.MaxValue)
+        {
+            _prunedByBarBound++;
+            return;
+        }
         int projectedBars = barCount + lowerBound;
 
         if (projectedBars > _bestBarCount)
+        {
+            _prunedByBarBound++;
             return;
+        }
 
         if (projectedBars == _bestBarCount && totalRemainder >= _bestRemainder)
+        {
+            _prunedByRemainderBound++;
             return;
+        }
+
+        var stateKey = new StateKey(patternIndex, remaining);
+        var prefixCost = new PrefixCost(barCount, totalRemainder);
+        if (_stateCache.TryGetValue(stateKey, out var seenPrefixCost))
+        {
+            if (seenPrefixCost.Dominates(prefixCost))
+            {
+                _prunedByDominance++;
+                return;
+            }
+
+            if (prefixCost.Dominates(seenPrefixCost))
+                _stateCache[stateKey] = prefixCost;
+        }
+        else if (_stateCache.Count < MaxStateCacheEntries)
+        {
+            _stateCache.Add(stateKey, prefixCost);
+        }
 
         var pattern = _patterns[patternIndex];
 
@@ -234,11 +300,42 @@ internal sealed class ExactPatternSolver
         }
     }
 
-    private int ComputeLowerBound(int[] remaining)
+    private void BuildSuffixMaxCounts()
+    {
+        if (_patterns.Count == 0)
+        {
+            _suffixMaxCounts = null;
+            return;
+        }
+
+        var cells = (long)_patterns.Count * _partTypeCount;
+        if (cells > 8_000_000)
+        {
+            _suffixMaxCounts = null;
+            return;
+        }
+
+        _suffixMaxCounts = new int[_patterns.Count + 1][];
+        _suffixMaxCounts[_patterns.Count] = new int[_partTypeCount];
+        for (var patternIndex = _patterns.Count - 1; patternIndex >= 0; patternIndex--)
+        {
+            var current = new int[_partTypeCount];
+            var suffixNext = _suffixMaxCounts[patternIndex + 1];
+            var counts = _patterns[patternIndex].Counts;
+            for (var partIndex = 0; partIndex < _partTypeCount; partIndex++)
+                current[partIndex] = Math.Max(suffixNext[partIndex], counts[partIndex]);
+            _suffixMaxCounts[patternIndex] = current;
+        }
+    }
+
+    private int ComputeLowerBound(int[] remaining, int patternIndex)
     {
         double totalPartLength = 0.0;
         int totalParts = 0;
         int perTypeMax = 0;
+        var maxCounts = _suffixMaxCounts != null && patternIndex < _suffixMaxCounts.Length
+            ? _suffixMaxCounts[patternIndex]
+            : _maxCountsPerType;
 
         for (int i = 0; i < _partTypeCount; i++)
         {
@@ -248,11 +345,15 @@ internal sealed class ExactPatternSolver
             totalPartLength += remaining[i] * _parts[i].Length;
             totalParts += remaining[i];
 
-            if (_maxCountsPerType[i] > 0)
+            if (maxCounts[i] > 0)
             {
-                int barsForType = (int)Math.Ceiling((double)remaining[i] / _maxCountsPerType[i]);
+                int barsForType = (int)Math.Ceiling((double)remaining[i] / maxCounts[i]);
                 if (barsForType > perTypeMax)
                     perTypeMax = barsForType;
+            }
+            else
+            {
+                return int.MaxValue;
             }
         }
 
@@ -308,9 +409,17 @@ internal sealed class ExactPatternSolver
         var result = new CuttingResult
         {
             Status = status,
+            BestFoundReason = status == CalculationStatus.BestFound && _timeLimitReached
+                ? BestFoundReason.TimeLimitReached
+                : BestFoundReason.None,
             Bars = bars,
             Method = method,
-            ElapsedSeconds = _stopwatch.Elapsed.TotalSeconds
+            ElapsedSeconds = _stopwatch.Elapsed.TotalSeconds,
+            ExploredNodes = _nodeCount,
+            GeneratedPatterns = _patterns.Count,
+            PrunedByBarBound = _prunedByBarBound,
+            PrunedByRemainderBound = _prunedByRemainderBound,
+            PrunedByDominance = _prunedByDominance
         };
 
         result.Patterns = GroupPatterns(result.Bars).ToList();
@@ -354,6 +463,52 @@ internal sealed class ExactPatternSolver
             UsedLength = usedLength;
             PartCount = partCount;
             Remainder = remainder;
+        }
+    }
+
+    private readonly record struct PrefixCost(int BarCount, double TotalRemainder)
+    {
+        public bool Dominates(PrefixCost other)
+            => BarCount < other.BarCount || (BarCount == other.BarCount && TotalRemainder <= other.TotalRemainder);
+    }
+
+    private readonly struct StateKey
+    {
+        public int PatternIndex { get; }
+        public int[] Remaining { get; }
+
+        public StateKey(int patternIndex, int[] remaining)
+        {
+            PatternIndex = patternIndex;
+            Remaining = (int[])remaining.Clone();
+        }
+    }
+
+    private sealed class StateKeyComparer : IEqualityComparer<StateKey>
+    {
+        public static StateKeyComparer Instance { get; } = new();
+
+        public bool Equals(StateKey x, StateKey y)
+        {
+            if (x.PatternIndex != y.PatternIndex || x.Remaining.Length != y.Remaining.Length)
+                return false;
+
+            for (var index = 0; index < x.Remaining.Length; index++)
+            {
+                if (x.Remaining[index] != y.Remaining[index])
+                    return false;
+            }
+
+            return true;
+        }
+
+        public int GetHashCode(StateKey obj)
+        {
+            var hash = new HashCode();
+            hash.Add(obj.PatternIndex);
+            foreach (var value in obj.Remaining)
+                hash.Add(value);
+            return hash.ToHashCode();
         }
     }
 }

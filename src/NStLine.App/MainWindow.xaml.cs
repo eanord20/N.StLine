@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Threading;
+using NStLine.App.Models;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using TextBoxBase = System.Windows.Controls.Primitives.TextBoxBase;
 using WpfTextBox = System.Windows.Controls.TextBox;
@@ -66,15 +67,53 @@ public partial class MainWindow : Window
         PartsGrid.CommitEdit(DataGridEditingUnit.Cell, false);
         PartsGrid.CommitEdit(DataGridEditingUnit.Row, false);
 
+        if (cellInfo.Item is not PartRow currentRow)
+            return;
+
         var rowIndex = PartsGrid.Items.IndexOf(cellInfo.Item);
         if (rowIndex < 0 || PartsGrid.Items.Count == 0)
             return;
 
-        var nextIndex = rowIndex + 1 < PartsGrid.Items.Count ? rowIndex + 1 : 0;
-        var nextItem = PartsGrid.Items[nextIndex];
-        PartsGrid.SelectedItem = nextItem;
-        PartsGrid.CurrentCell = new DataGridCellInfo(nextItem, cellInfo.Column);
-        PartsGrid.ScrollIntoView(nextItem);
+        if (rowIndex + 1 < PartsGrid.Items.Count)
+        {
+            MoveToCell(PartsGrid.Items[rowIndex + 1], cellInfo.Column);
+            return;
+        }
+
+        if (ViewModel?.ActiveMaterialId == null || currentRow.MaterialId != ViewModel.ActiveMaterialId)
+            return;
+
+        var maxRowNumber = ViewModel.Parts
+            .Where(part => part.MaterialId == currentRow.MaterialId)
+            .Select(part => part.RowNumber)
+            .DefaultIfEmpty(0)
+            .Max();
+        if (currentRow.RowNumber != maxRowNumber || ViewModel.AddRowCommand.CanExecute(null) != true)
+            return;
+
+        var countBeforeAdd = ViewModel.Parts.Count;
+        ViewModel.AddRowCommand.Execute(null);
+        if (ViewModel.Parts.Count <= countBeforeAdd)
+            return;
+
+        var addedRow = ViewModel.Parts
+            .Where(part => part.MaterialId == currentRow.MaterialId)
+            .OrderByDescending(part => part.RowNumber)
+            .FirstOrDefault();
+        if (addedRow == null)
+            return;
+
+        MoveToCell(addedRow, cellInfo.Column);
+    }
+
+    private void MoveToCell(object item, DataGridColumn? column)
+    {
+        if (column == null)
+            return;
+
+        PartsGrid.SelectedItem = item;
+        PartsGrid.CurrentCell = new DataGridCellInfo(item, column);
+        PartsGrid.ScrollIntoView(item);
         Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
         {
             PartsGrid.Focus();

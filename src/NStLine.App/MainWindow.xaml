@@ -90,13 +90,25 @@
                             <TextBlock Text="{Binding ButtonClear}" />
                         </StackPanel>
                     </Button>
+                    <TextBlock Margin="14,0,6,0" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelExactTimeLimit}" />
+                    <TextBox Width="68" VerticalContentAlignment="Center" Text="{Binding ExactTimeLimitSeconds, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                    <TextBlock Margin="10,0,6,0" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelExactPatternLimit}" />
+                    <TextBox Width="92" VerticalContentAlignment="Center" Text="{Binding ExactMaxPatternCount, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                 </StackPanel>
-                <Button HorizontalAlignment="Right" Style="{StaticResource PrimaryActionButtonStyle}" Command="{Binding CalculateCommand}">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="Play" Width="18" Height="18" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding ButtonCalculate}" />
-                    </StackPanel>
-                </Button>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding CancelCalculationCommand}" Margin="0,0,6,0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Stop" Width="16" Height="16" Margin="0,0,5,0" />
+                            <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonCancelCalculation}" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource PrimaryActionButtonStyle}" Command="{Binding CalculateCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Play" Width="18" Height="18" Margin="0,0,5,0" />
+                            <TextBlock Text="{Binding ButtonCalculate}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
             </Grid>
         </Border>
 
@@ -217,7 +229,18 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnSeq}" Binding="{Binding RowNumber}" Width="50" MinWidth="45" IsReadOnly="True" />
                                 <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnName}" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" MinWidth="160" />
-                                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnLength}" Binding="{Binding Length, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="110" MinWidth="95" />
+                                <DataGridTextColumn Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnLength}" Binding="{Binding Length, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="110" MinWidth="95">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="TextAlignment" Value="Center" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                    <DataGridTextColumn.EditingElementStyle>
+                                        <Style TargetType="TextBox">
+                                            <Setter Property="TextAlignment" Value="Center" />
+                                        </Style>
+                                    </DataGridTextColumn.EditingElementStyle>
+                                </DataGridTextColumn>
                                 <DataGridTemplateColumn x:Name="QuantityColumn" Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ColumnQuantity}" Width="115" MinWidth="100">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -312,7 +335,10 @@
                     </Grid.RowDefinitions>
 
                     <Grid>
-                        <TextBlock Text="{Binding CurrentResultStatusText}" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{Binding CurrentResultStatusText}" FontSize="16" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding CurrentResultStatusDetails}" Opacity="0.75" TextWrapping="Wrap" />
+                        </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding CopyResultsCommand}" Margin="0,0,6,0">
                                 <StackPanel Orientation="Horizontal">
@@ -371,7 +397,13 @@
                             </Border>
 
                             <WrapPanel Grid.Row="2">
-                                <TextBlock Margin="0,0,18,0"><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTotalBars, Mode=OneWay}" /><Run Text=": " /><Run Text="{Binding CurrentResult.TotalBarCount, Mode=OneWay}" /></TextBlock>
+                                <Border Background="{DynamicResource ActiveSectionBrush}" CornerRadius="4" Padding="8,4" Margin="0,0,18,0">
+                                    <TextBlock FontWeight="Bold" FontSize="16">
+                                        <Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTotalBars, Mode=OneWay}" />
+                                        <Run Text=": " />
+                                        <Run Text="{Binding CurrentResult.TotalBarCount, Mode=OneWay}" />
+                                    </TextBlock>
+                                </Border>
                                 <TextBlock Margin="0,0,18,0"><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTotalPartLength, Mode=OneWay}" /><Run Text=": " /><Run Text="{Binding CurrentResult.TotalPartLength, StringFormat='{}{0:0.##}', Mode=OneWay}" /></TextBlock>
                                 <TextBlock Margin="0,0,18,0"><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTotalCutLoss, Mode=OneWay}" /><Run Text=": " /><Run Text="{Binding CurrentResult.TotalCutLoss, StringFormat='{}{0:0.##}', Mode=OneWay}" /></TextBlock>
                                 <TextBlock Margin="0,0,18,0"><Run Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTotalRemainder, Mode=OneWay}" /><Run Text=": " /><Run Text="{Binding CurrentResult.TotalRemainder, StringFormat='{}{0:0.##}', Mode=OneWay}" /></TextBlock>

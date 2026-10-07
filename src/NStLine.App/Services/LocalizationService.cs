@@ -59,6 +59,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
     public string ButtonMaterials => this["ButtonMaterials"];
     public string ButtonPaste => this["ButtonPaste"];
     public string ButtonCalculate => this["ButtonCalculate"];
+    public string ButtonCancelCalculation => this["ButtonCancelCalculation"];
     public string ButtonCopyResults => this["ButtonCopyResults"];
     public string ButtonExportDocx => this["ButtonExportDocx"];
     public string ButtonGenerateReport => this["ButtonGenerateReport"];
@@ -85,6 +86,8 @@ public sealed class LocalizationService : INotifyPropertyChanged
     public string LabelInTask => this["LabelInTask"];
     public string LabelTaskMaterials => this["LabelTaskMaterials"];
     public string LabelReportOutputPath => this["LabelReportOutputPath"];
+    public string LabelExactTimeLimit => this["LabelExactTimeLimit"];
+    public string LabelExactPatternLimit => this["LabelExactPatternLimit"];
     public string EmptyNoMaterials => this["EmptyNoMaterials"];
     public string EmptyNoParts => this["EmptyNoParts"];
     public string EmptyNoResult => this["EmptyNoResult"];
@@ -120,6 +123,10 @@ public sealed class LocalizationService : INotifyPropertyChanged
     public string MessagePasteFailed => this["MessagePasteFailed"];
     public string ConfirmRemoveMaterial => this["ConfirmRemoveMaterial"];
     public string StatusCalculating => this["StatusCalculating"];
+    public string StatusCanceled => this["StatusCanceled"];
+    public string StatusBestFoundTimeLimit => this["StatusBestFoundTimeLimit"];
+    public string StatusBestFoundPatternLimit => this["StatusBestFoundPatternLimit"];
+    public string StatusBestFoundUnknown => this["StatusBestFoundUnknown"];
     public string StatusGeneratingReport => this["StatusGeneratingReport"];
     public string StatusReportSaved => this["StatusReportSaved"];
     public string StatusResultsCopied => this["StatusResultsCopied"];
@@ -158,6 +165,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["ButtonMaterials"] = "Materials",
             ["ButtonPaste"] = "Paste Excel",
             ["ButtonCalculate"] = "Calculate",
+            ["ButtonCancelCalculation"] = "Cancel",
             ["ButtonCopyResults"] = "Copy results",
             ["ButtonExportDocx"] = "Export DOCX",
             ["ButtonGenerateReport"] = "Generate report",
@@ -184,6 +192,8 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["LabelInTask"] = "In task",
             ["LabelTaskMaterials"] = "Task materials",
             ["LabelReportOutputPath"] = "Report folder",
+            ["LabelExactTimeLimit"] = "Exact time limit, s",
+            ["LabelExactPatternLimit"] = "Pattern limit",
             ["EmptyNoMaterials"] = "Add a material from the library to begin",
             ["EmptyNoParts"] = "Add parts manually or paste them from Excel",
             ["EmptyNoResult"] = "Calculate the task to see the cutting result",
@@ -219,6 +229,10 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["MessagePasteFailed"] = "Could not paste data. Make sure it has columns for name, length and quantity.",
             ["ConfirmRemoveMaterial"] = "Remove '{0}' and all its parts?",
             ["StatusCalculating"] = "Calculating...",
+            ["StatusCanceled"] = "Calculation canceled.",
+            ["StatusBestFoundTimeLimit"] = "Best found: exact search reached time limit.",
+            ["StatusBestFoundPatternLimit"] = "Best found: exact search reached pattern limit.",
+            ["StatusBestFoundUnknown"] = "Best found: exact optimality was not proven.",
             ["StatusGeneratingReport"] = "Generating report...",
             ["StatusReportSaved"] = "Report saved: {0}",
             ["StatusResultsCopied"] = "Results copied to clipboard.",
@@ -256,6 +270,7 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["ButtonMaterials"] = "Матеріали",
             ["ButtonPaste"] = "Вставити Excel",
             ["ButtonCalculate"] = "Розрахувати",
+            ["ButtonCancelCalculation"] = "Скасувати",
             ["ButtonCopyResults"] = "Копіювати результати",
             ["ButtonExportDocx"] = "Експорт DOCX",
             ["ButtonGenerateReport"] = "Сформувати звіт",
@@ -282,6 +297,8 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["LabelInTask"] = "У задачі",
             ["LabelTaskMaterials"] = "Матеріали задачі",
             ["LabelReportOutputPath"] = "Папка звіту",
+            ["LabelExactTimeLimit"] = "Ліміт часу exact, с",
+            ["LabelExactPatternLimit"] = "Ліміт патернів",
             ["EmptyNoMaterials"] = "Додайте матеріал з бібліотеки, щоб почати",
             ["EmptyNoParts"] = "Додайте деталі вручну або вставте їх з Excel",
             ["EmptyNoResult"] = "Виконайте розрахунок, щоб побачити результат розкрою",
@@ -317,6 +334,10 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["MessagePasteFailed"] = "Не вдалося вставити дані. Переконайтеся, що є стовпці назви, довжини та кількості.",
             ["ConfirmRemoveMaterial"] = "Видалити '{0}' та всі його деталі?",
             ["StatusCalculating"] = "Виконується розрахунок...",
+            ["StatusCanceled"] = "Розрахунок скасовано.",
+            ["StatusBestFoundTimeLimit"] = "Найкращий знайдений варіант: exact-пошук досяг ліміту часу.",
+            ["StatusBestFoundPatternLimit"] = "Найкращий знайдений варіант: exact-пошук досяг ліміту патернів.",
+            ["StatusBestFoundUnknown"] = "Найкращий знайдений варіант: оптимальність exact не доведено.",
             ["StatusGeneratingReport"] = "Формується звіт...",
             ["StatusReportSaved"] = "Звіт збережено: {0}",
             ["StatusResultsCopied"] = "Результати скопійовано в буфер обміну.",

@@ -43,9 +43,9 @@ internal static class FirstFitDecreasingSolver
         for (int i = 0; i < bars.Count; i++)
         {
             var bar = bars[i];
-            int cutCount = bar.Parts.Count;
-            double partLength = bar.Parts.Sum(p => p.Source.Length);
-            double cutLoss = cutCount * task.CutWidth;
+            int cutCount = bar.CutCount;
+            double partLength = bar.UsedPartLength;
+            double cutLoss = bar.CutLoss(task.CutWidth);
             double remainder = task.BarLength - partLength - cutLoss;
 
             resultBars.Add(new BarCutting
@@ -96,21 +96,27 @@ internal static class FirstFitDecreasingSolver
     {
         public double Length { get; }
         public List<PlacedPart> Parts { get; } = new();
+        public int CutCount { get; private set; }
+        public double UsedPartLength { get; private set; }
 
         public BarState(double length)
         {
             Length = length;
         }
 
+        public double CutLoss(double cutWidth) => CutCount * cutWidth;
+
         public bool TryPlace(PlacedPart part, double cutWidth)
         {
-            int newCutCount = Parts.Count + 1;
-            double newPartLength = Parts.Sum(p => p.Source.Length) + part.Source.Length;
+            int newCutCount = CutCount + 1;
+            double newPartLength = UsedPartLength + part.Source.Length;
             double newUsedLength = newPartLength + newCutCount * cutWidth;
 
             if (newUsedLength <= Length + 1e-9)
             {
                 Parts.Add(part);
+                CutCount = newCutCount;
+                UsedPartLength = newPartLength;
                 return true;
             }
 

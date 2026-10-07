@@ -15,9 +15,9 @@ public sealed class ReportService : IReportService
         InsertParagraph(document, "N.StLine — Cutting Report").FontSize(18).Bold();
         InsertParagraph(document);
         InsertParagraph(document, "Summary").FontSize(14).Bold();
+        InsertParagraph(document, $"REQUIRED BARS: {result.TotalBarCount}").FontSize(16).Bold();
         InsertParagraph(document, $"Status: {(result.Status == CalculationStatus.Optimal ? "Optimal" : "Best found")}");
         InsertParagraph(document, $"Materials: {result.Materials.Count}");
-        InsertParagraph(document, $"Bars: {result.TotalBarCount}");
         InsertParagraph(document, $"Total part length: {result.TotalPartLength:F1} mm");
         InsertParagraph(document, $"Total cut loss: {result.TotalCutLoss:F1} mm");
         InsertParagraph(document, $"Total remainder: {result.TotalRemainder:F1} mm");

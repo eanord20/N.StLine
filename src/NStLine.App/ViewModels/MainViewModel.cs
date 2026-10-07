@@ -48,6 +48,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private bool _isCurrentResultStale;
     private string _reportOutputPath = string.Empty;
     private string? _lastReportPath;
+    private double _exactTimeLimitSeconds = AppConstants.DefaultCuttingOptions.TimeLimitSeconds;
+    private int _exactMaxPatternCount = AppConstants.DefaultCuttingOptions.MaxPatternCount;
+    private CancellationTokenSource? _calculationCts;
+    private string _currentResultStatusDetails = string.Empty;
 
     public MainViewModel(
         IProjectCuttingEngine cuttingEngine,
@@ -78,6 +82,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         UndoCommand = new RelayCommand(_ => Undo(), _ => _undoHistory.CanUndo);
         PasteFromClipboardCommand = new RelayCommand(_ => PasteFromClipboard(), _ => ActiveMaterial != null);
         CalculateCommand = new RelayCommand(async _ => await CalculateAsync(), _ => CanCalculate());
+        CancelCalculationCommand = new RelayCommand(_ => CancelCalculation(), _ => _calculationCts != null && IsBusy);
         OpenMaterialsCommand = new RelayCommand(_ => OpenMaterials());
         AddMaterialCommand = new RelayCommand(AddMaterial, material => material is LinearMaterial);
         RemoveMaterialCommand = new RelayCommand(RemoveMaterial, id => id is string);
@@ -225,12 +230,48 @@ public sealed class MainViewModel : INotifyPropertyChanged
         : CurrentResult.Status == CalculationStatus.Optimal
             ? StatusOptimal
             : StatusBestFound;
+    public string CurrentResultStatusDetails
+    {
+        get => _currentResultStatusDetails;
+        private set { _currentResultStatusDetails = value; OnPropertyChanged(); }
+    }
+
+    public double ExactTimeLimitSeconds
+    {
+        get => _exactTimeLimitSeconds;
+        set
+        {
+            var normalized = double.IsFinite(value) ? Math.Max(1, value) : AppConstants.DefaultCuttingOptions.TimeLimitSeconds;
+            if (Math.Abs(_exactTimeLimitSeconds - normalized) < 0.0001)
+                return;
+
+            _exactTimeLimitSeconds = normalized;
+            OnPropertyChanged();
+            SaveSettings();
+        }
+    }
+
+    public int ExactMaxPatternCount
+    {
+        get => _exactMaxPatternCount;
+        set
+        {
+            var normalized = Math.Max(1, value);
+            if (_exactMaxPatternCount == normalized)
+                return;
+
+            _exactMaxPatternCount = normalized;
+            OnPropertyChanged();
+            SaveSettings();
+        }
+    }
 
     public ICommand AddRowCommand { get; }
     public ICommand DeleteRowCommand { get; }
     public ICommand UndoCommand { get; }
     public ICommand PasteFromClipboardCommand { get; }
     public ICommand CalculateCommand { get; }
+    public ICommand CancelCalculationCommand { get; }
     public ICommand OpenMaterialsCommand { get; }
     public ICommand AddMaterialCommand { get; }
     public ICommand RemoveMaterialCommand { get; }
@@ -336,6 +377,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         var settings = _appSettingsService.Load();
         _localization.Culture = settings.Culture;
         _reportOutputPath = settings.ReportOutputPath ?? string.Empty;
+        _exactTimeLimitSeconds = settings.ExactTimeLimitSeconds > 0
+            ? settings.ExactTimeLimitSeconds
+            : AppConstants.DefaultCuttingOptions.TimeLimitSeconds;
+        _exactMaxPatternCount = settings.ExactMaxPatternCount > 0
+            ? settings.ExactMaxPatternCount
+            : AppConstants.DefaultCuttingOptions.MaxPatternCount;
         if (Enum.TryParse<AppTheme>(settings.Theme, true, out var theme))
         {
             _currentTheme = theme;
@@ -350,7 +397,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             Culture = _localization.Culture,
             Theme = _currentTheme.ToString(),
-            ReportOutputPath = ReportOutputPath
+            ReportOutputPath = ReportOutputPath,
+            ExactTimeLimitSeconds = ExactTimeLimitSeconds,
+            ExactMaxPatternCount = ExactMaxPatternCount
         });
     }
 
@@ -524,15 +573,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             foreach (var line in lines)
             {
                 var cells = line.Split('\t').Select(c => c.Trim()).ToArray();
-                if (cells.Length < 2)
-                    continue;
-
-                string name = cells[0];
-                if (!double.TryParse(cells[1], out var length))
-                    continue;
-
-                int quantity = 1;
-                if (cells.Length >= 3 && !int.TryParse(cells[2], out quantity))
+                if (!PartPasteParser.TryParse(cells, out var name, out var length, out var quantity))
                     continue;
 
                 var rowNumber = Parts.Count + 1;
@@ -554,6 +595,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 _undoHistory.Push(snapshot.Rows, snapshot.ActiveMaterialId);
                 RaiseUndoCanExecuteChanged();
             }
+            else
+            {
+                MessageBox.Show(_localization.MessagePasteFailed, _localization.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+
             RenumberRows();
         }
         catch (Exception ex)
@@ -592,20 +638,35 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public async Task CalculateAsync()
     {
+        _calculationCts?.Dispose();
+        _calculationCts = new CancellationTokenSource();
         IsBusy = true;
         ProgressValue = 0;
         StatusText = _localization.StatusCalculating;
+        CurrentResultStatusDetails = string.Empty;
+        CommandManager.InvalidateRequerySuggested();
 
         try
         {
             var task = CreateProjectTaskSnapshot();
-            var options = AppConstants.DefaultCuttingOptions;
+            var options = new CuttingOptions
+            {
+                TimeLimitSeconds = ExactTimeLimitSeconds,
+                MaxPatternCount = ExactMaxPatternCount,
+                ToleranceMm = AppConstants.DefaultCuttingOptions.ToleranceMm
+            };
             var progress = new Progress<double>(v => ProgressValue = v * 100);
-            var result = await Task.Run(() => _cuttingEngine.Solve(task, options, progress));
+            var token = _calculationCts.Token;
+            var result = await Task.Run(() => _cuttingEngine.Solve(task, options, progress, token), token);
             StatusText = result.Status == CalculationStatus.Optimal
                 ? StatusOptimal
                 : StatusBestFound;
+            CurrentResultStatusDetails = BuildBestFoundDetails(result);
             SetCurrentResult(task, result);
+        }
+        catch (OperationCanceledException)
+        {
+            StatusText = _localization.StatusCanceled;
         }
         catch (Exception ex)
         {
@@ -613,8 +674,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
         finally
         {
+            _calculationCts?.Dispose();
+            _calculationCts = null;
             IsBusy = false;
             ProgressValue = 0;
+            CommandManager.InvalidateRequerySuggested();
         }
     }
 
@@ -646,8 +710,35 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         CurrentTask = null;
         CurrentResult = null;
+        CurrentResultStatusDetails = string.Empty;
         IsCurrentResultStale = false;
         CommandManager.InvalidateRequerySuggested();
+    }
+
+    private string BuildBestFoundDetails(ProjectCuttingResult result)
+    {
+        if (result.Status == CalculationStatus.Optimal)
+            return string.Empty;
+
+        var reasons = result.Materials
+            .Where(x => x.Result.Status == CalculationStatus.BestFound)
+            .Select(x => x.Result.BestFoundReason)
+            .Distinct()
+            .ToList();
+
+        if (reasons.Contains(BestFoundReason.TimeLimitReached))
+            return _localization.StatusBestFoundTimeLimit;
+        if (reasons.Contains(BestFoundReason.PatternLimitReached))
+            return _localization.StatusBestFoundPatternLimit;
+        return _localization.StatusBestFoundUnknown;
+    }
+
+    private void CancelCalculation()
+    {
+        if (_calculationCts == null)
+            return;
+
+        _calculationCts.Cancel();
     }
 
     private bool CanUseCurrentResult()
