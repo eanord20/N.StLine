@@ -101,6 +101,55 @@ public sealed class MainViewModelMaterialTests
     }
 
     [Fact]
+    public void OversizedLengthEditedInTable_BlocksCalculation()
+    {
+        var material = Material("first", "Tube");
+        var viewModel = CreateViewModel(material);
+        viewModel.AddMaterialCommand.Execute(material);
+        viewModel.AddRowCommand.Execute(null);
+
+        var row = Assert.Single(viewModel.Parts);
+        row.Length = material.StandardLength;
+
+        Assert.True(row.HasError);
+        Assert.False(viewModel.CalculateCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void QuantityEditedToZero_BlocksCalculationUntilCorrected()
+    {
+        var material = Material("first", "Tube");
+        var viewModel = CreateViewModel(material);
+        viewModel.AddMaterialCommand.Execute(material);
+        viewModel.AddRowCommand.Execute(null);
+        var row = Assert.Single(viewModel.Parts);
+        row.Length = 1000;
+
+        row.Quantity = 0;
+
+        Assert.True(row.HasError);
+        Assert.False(viewModel.CalculateCommand.CanExecute(null));
+        row.Quantity = 2;
+        Assert.False(row.HasError);
+        Assert.True(viewModel.CalculateCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void NonFinitePartLength_BlocksCalculation()
+    {
+        var material = Material("first", "Tube");
+        var viewModel = CreateViewModel(material);
+        viewModel.AddMaterialCommand.Execute(material);
+        viewModel.AddRowCommand.Execute(null);
+
+        var row = Assert.Single(viewModel.Parts);
+        row.Length = double.NaN;
+
+        Assert.True(row.HasError);
+        Assert.False(viewModel.CalculateCommand.CanExecute(null));
+    }
+
+    [Fact]
     public void AvailableLibraryMaterialsExcludeProjectMaterials()
     {
         var first = Material("first", "Tube");

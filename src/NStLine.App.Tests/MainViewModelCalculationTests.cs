@@ -1,4 +1,5 @@
 using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using NStLine.App.Models;
 using NStLine.App.Services;
@@ -92,6 +93,128 @@ public sealed class MainViewModelCalculationTests
         await viewModel.CalculateAsync();
 
         Assert.Equal(LocalizationService.Instance.StatusBestFoundTimeLimit, viewModel.CurrentResultStatusDetails);
+    }
+
+    [Fact]
+    public void AboutDialogAssemblyVersion_IsCurrentRelease()
+    {
+        var version = typeof(MainViewModel).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+        Assert.StartsWith("1.1.0", version);
+    }
+
+    [Fact]
+    public void SelectingExactProfile_UpdatesLimitsAndPersistsSettings()
+    {
+        var (viewModel, _, settings) = CreateViewModel();
+
+        viewModel.SelectedExactProfileKey = "fast";
+
+        Assert.Equal("fast", viewModel.SelectedExactProfileKey);
+        Assert.Equal(4.0, viewModel.ExactTimeLimitSeconds);
+        Assert.Equal(25_000, viewModel.ExactMaxPatternCount);
+        Assert.Equal("fast", settings.Saved?.ExactProfileKey);
+    }
+
+    [Fact]
+    public void PresetLimits_RejectManualChangesUntilCustomSelected()
+    {
+        var (viewModel, _, settings) = CreateViewModel();
+        viewModel.SelectedExactProfileKey = "fast";
+
+        viewModel.ExactTimeLimitSeconds = 17;
+        viewModel.ExactMaxPatternCount = 42_000;
+
+        Assert.Equal("fast", viewModel.SelectedExactProfileKey);
+        Assert.Equal(4, viewModel.ExactTimeLimitSeconds);
+        Assert.Equal(25_000, viewModel.ExactMaxPatternCount);
+        Assert.Single(settings.Saves);
+
+        viewModel.SelectedExactProfileKey = "custom";
+        viewModel.ExactTimeLimitSeconds = 17;
+        viewModel.ExactMaxPatternCount = 42_000;
+
+        Assert.Equal("custom", settings.Saved?.ExactProfileKey);
+        Assert.Equal(17, settings.Saved?.ExactTimeLimitSeconds);
+        Assert.Equal(42_000, settings.Saved?.ExactMaxPatternCount);
+    }
+
+    [Fact]
+    public void LoadingCustomLimits_RestoresProfileAndValues()
+    {
+        var material = new LinearMaterial { Id = "material", Name = "Tube", StandardLength = 6000, CutWidth = 3 };
+        var settings = new MemorySettingsService(new AppSettings
+        {
+            ExactProfileKey = "custom",
+            ExactTimeLimitSeconds = 17,
+            ExactMaxPatternCount = 42_000
+        });
+
+        var viewModel = new MainViewModel(
+            new RecordingProjectCuttingEngine(),
+            new MemoryMaterialsLibraryService(material),
+            null,
+            settings);
+
+        Assert.Equal("custom", viewModel.SelectedExactProfileKey);
+        Assert.Equal(17, viewModel.ExactTimeLimitSeconds);
+        Assert.Equal(42_000, viewModel.ExactMaxPatternCount);
+    }
+
+    [Fact]
+    public void LegacyDeepProfile_LoadsAsCustomWithoutLosingLimits()
+    {
+        var material = new LinearMaterial { Id = "material", Name = "Tube", StandardLength = 6000, CutWidth = 3 };
+        var settings = new MemorySettingsService(new AppSettings
+        {
+            ExactProfileKey = "deep",
+            ExactTimeLimitSeconds = 90,
+            ExactMaxPatternCount = 1_000_000
+        });
+
+        var viewModel = new MainViewModel(new RecordingProjectCuttingEngine(),
+            new MemoryMaterialsLibraryService(material), null, settings);
+
+        Assert.Equal("custom", viewModel.SelectedExactProfileKey);
+        Assert.Equal(90, viewModel.ExactTimeLimitSeconds);
+        Assert.Equal(1_000_000, viewModel.ExactMaxPatternCount);
+    }
+
+    [Fact]
+    public void DeepProfile_CannotBeSelectedAgain()
+    {
+        var (viewModel, _, settings) = CreateViewModel();
+
+        viewModel.SelectedExactProfileKey = "deep";
+
+        Assert.Equal("balanced", viewModel.SelectedExactProfileKey);
+        Assert.Empty(settings.Saves);
+    }
+
+    [Fact]
+    public void SelectingCustomProfile_LeavesManualLimitsUnchanged()
+    {
+        var (viewModel, _, _) = CreateViewModel();
+        viewModel.SelectedExactProfileKey = "fast";
+
+        viewModel.SelectedExactProfileKey = "custom";
+
+        Assert.Equal("custom", viewModel.SelectedExactProfileKey);
+        Assert.Equal(4, viewModel.ExactTimeLimitSeconds);
+        Assert.Equal(25_000, viewModel.ExactMaxPatternCount);
+    }
+
+    [Fact]
+    public void MissingSelection_DoesNotResetActiveProfile()
+    {
+        var (viewModel, _, settings) = CreateViewModel();
+        viewModel.SelectedExactProfileKey = "fast";
+
+        viewModel.SelectedExactProfileKey = null!;
+
+        Assert.Equal("fast", viewModel.SelectedExactProfileKey);
+        Assert.Equal(4, viewModel.ExactTimeLimitSeconds);
+        Assert.Single(settings.Saves);
     }
 
     private static (MainViewModel ViewModel, RecordingReportService Reports, MemorySettingsService Settings) CreateViewModel(string reportOutputPath = "")
@@ -203,7 +326,12 @@ public sealed class MainViewModelCalculationTests
         public MemorySettingsService(AppSettings settings) => _settings = settings;
 
         public AppSettings? Saved { get; private set; }
+        public List<AppSettings> Saves { get; } = new();
         public AppSettings Load() => _settings;
-        public void Save(AppSettings settings) => Saved = settings;
+        public void Save(AppSettings settings)
+        {
+            Saved = settings;
+            Saves.Add(settings);
+        }
     }
 }

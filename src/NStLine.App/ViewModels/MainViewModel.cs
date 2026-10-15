@@ -26,6 +26,11 @@ namespace NStLine.App.ViewModels;
 public sealed class MainViewModel : INotifyPropertyChanged
 {
     private const int MaxUndoDepth = 50;
+    private static readonly Dictionary<string, (double TimeLimit, int PatternLimit)> ExactProfiles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["fast"] = (AppConstants.FastCuttingOptions.TimeLimitSeconds, AppConstants.FastCuttingOptions.MaxPatternCount),
+        ["balanced"] = (AppConstants.DefaultCuttingOptions.TimeLimitSeconds, AppConstants.DefaultCuttingOptions.MaxPatternCount)
+    };
 
     private readonly LocalizationService _localization = LocalizationService.Instance;
     private readonly IMaterialsLibraryService _materialsLibraryService;
@@ -52,6 +57,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private int _exactMaxPatternCount = AppConstants.DefaultCuttingOptions.MaxPatternCount;
     private CancellationTokenSource? _calculationCts;
     private string _currentResultStatusDetails = string.Empty;
+    private string _selectedExactProfileKey = "balanced";
 
     public MainViewModel(
         IProjectCuttingEngine cuttingEngine,
@@ -241,6 +247,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         get => _exactTimeLimitSeconds;
         set
         {
+            if (_selectedExactProfileKey != "custom")
+                return;
+
             var normalized = double.IsFinite(value) ? Math.Max(1, value) : AppConstants.DefaultCuttingOptions.TimeLimitSeconds;
             if (Math.Abs(_exactTimeLimitSeconds - normalized) < 0.0001)
                 return;
@@ -256,12 +265,42 @@ public sealed class MainViewModel : INotifyPropertyChanged
         get => _exactMaxPatternCount;
         set
         {
+            if (_selectedExactProfileKey != "custom")
+                return;
+
             var normalized = Math.Max(1, value);
             if (_exactMaxPatternCount == normalized)
                 return;
 
             _exactMaxPatternCount = normalized;
             OnPropertyChanged();
+            SaveSettings();
+        }
+    }
+
+    public string SelectedExactProfileKey
+    {
+        get => _selectedExactProfileKey;
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return;
+
+            var normalized = value.Trim().ToLowerInvariant();
+            if (normalized != "custom" && !ExactProfiles.ContainsKey(normalized))
+                return;
+            if (_selectedExactProfileKey == normalized)
+                return;
+
+            _selectedExactProfileKey = normalized;
+            OnPropertyChanged();
+            if (ExactProfiles.TryGetValue(normalized, out var profile))
+            {
+                _exactTimeLimitSeconds = profile.TimeLimit;
+                _exactMaxPatternCount = profile.PatternLimit;
+                OnPropertyChanged(nameof(ExactTimeLimitSeconds));
+                OnPropertyChanged(nameof(ExactMaxPatternCount));
+            }
             SaveSettings();
         }
     }
@@ -383,6 +422,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _exactMaxPatternCount = settings.ExactMaxPatternCount > 0
             ? settings.ExactMaxPatternCount
             : AppConstants.DefaultCuttingOptions.MaxPatternCount;
+        var savedKey = settings.ExactProfileKey?.Trim().ToLowerInvariant();
+        _selectedExactProfileKey = savedKey != null && ExactProfiles.TryGetValue(savedKey, out var profile) &&
+            Math.Abs(profile.TimeLimit - _exactTimeLimitSeconds) < 0.0001 &&
+            profile.PatternLimit == _exactMaxPatternCount
+                ? savedKey
+                : "custom";
         if (Enum.TryParse<AppTheme>(settings.Theme, true, out var theme))
         {
             _currentTheme = theme;
@@ -399,7 +444,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             Theme = _currentTheme.ToString(),
             ReportOutputPath = ReportOutputPath,
             ExactTimeLimitSeconds = ExactTimeLimitSeconds,
-            ExactMaxPatternCount = ExactMaxPatternCount
+            ExactMaxPatternCount = ExactMaxPatternCount,
+            ExactProfileKey = SelectedExactProfileKey
         });
     }
 
@@ -619,7 +665,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
         var material = ProjectMaterials.FirstOrDefault(x => x.Id == row.MaterialId);
         if (material == null)
             row.SetError(_localization.ErrorMaterialNotAssigned);
-        else if (row.Length <= 0)
+        else if (!double.IsFinite(material.StandardLength) || material.StandardLength <= 0 ||
+                 !double.IsFinite(material.CutWidth) || material.CutWidth < 0 || material.CutWidth >= material.StandardLength)
+            row.SetError(_localization.ErrorInvalidInput);
+        else if (!double.IsFinite(row.Length) || row.Length <= 0)
             row.SetError(_localization.ErrorLengthPositive);
         else if (row.Quantity <= 0)
             row.SetError(_localization.ErrorQuantityPositive);

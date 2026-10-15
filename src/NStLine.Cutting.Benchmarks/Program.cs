@@ -113,7 +113,9 @@ foreach (var profile in profiles)
 {
     foreach (var @case in benchmarkCases.Where(c => profile.CaseFilter(c.Material.Name)))
     {
-        var caseOptions = BuildCaseOptions(profile.Options, @case.Material.Name);
+        var caseOptions = profile.Name == "Default"
+            ? BuildCaseOptions(profile.Options, @case.Material.Name)
+            : profile.Options;
         var sw = Stopwatch.StartNew();
         var result = engine.Solve(@case, caseOptions);
         sw.Stop();

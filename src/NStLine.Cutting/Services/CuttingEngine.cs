@@ -119,11 +119,11 @@ public sealed class CuttingEngine : ICuttingEngine
         if (task.Material == null)
             throw new ArgumentException("Material is not selected.", nameof(task));
 
-        if (task.BarLength <= 0)
-            throw new ArgumentException("Bar length must be greater than zero.", nameof(task));
+        if (!double.IsFinite(task.BarLength) || task.BarLength <= 0)
+            throw new ArgumentException("Bar length must be finite and greater than zero.", nameof(task));
 
-        if (task.CutWidth < 0 || task.CutWidth >= task.BarLength)
-            throw new ArgumentException("Cut width must be non-negative and less than bar length.", nameof(task));
+        if (!double.IsFinite(task.CutWidth) || task.CutWidth < 0 || task.CutWidth >= task.BarLength)
+            throw new ArgumentException("Cut width must be finite, non-negative and less than bar length.", nameof(task));
 
         if (task.Parts == null || task.Parts.Count == 0)
             throw new ArgumentException("At least one part is required.", nameof(task));
@@ -133,8 +133,8 @@ public sealed class CuttingEngine : ICuttingEngine
             if (part == null)
                 continue;
 
-            if (part.Length <= 0)
-                throw new ArgumentException($"Part '{part.Name}' length must be greater than zero.", nameof(task));
+            if (!double.IsFinite(part.Length) || part.Length <= 0)
+                throw new ArgumentException($"Part '{part.Name}' length must be finite and greater than zero.", nameof(task));
 
             if (part.Quantity <= 0)
                 throw new ArgumentException($"Part '{part.Name}' quantity must be greater than zero.", nameof(task));

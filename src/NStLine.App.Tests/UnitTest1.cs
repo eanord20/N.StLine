@@ -2,9 +2,41 @@ using System.IO;
 using System.Text.Json;
 using NStLine.App.Models;
 using NStLine.App.Services;
+using NStLine.Core.Constants;
 using NStLine.Core.Models;
 
 namespace NStLine.App.Tests;
+
+public sealed class AboutInformationTests
+{
+    [Fact]
+    public void LicenseUrl_PointsToOfficialGplV3Page()
+        => Assert.Equal("https://www.gnu.org/licenses/gpl-3.0.html", AppConstants.LicenseUrl);
+
+    [Fact]
+    public void AboutLicenseStrings_AreAvailableInEnglishAndUkrainian()
+    {
+        var localization = LocalizationService.Instance;
+        var originalCulture = localization.Culture;
+
+        try
+        {
+            localization.Culture = "en";
+            Assert.Equal("License", localization.ButtonLicense);
+            Assert.Equal("Third-party libraries", localization.AboutThirdPartyLibraries);
+            Assert.Equal("Licensed under GNU GPL v3 or later", localization.AboutLicense);
+
+            localization.Culture = "ua";
+            Assert.Equal("Ліцензія", localization.ButtonLicense);
+            Assert.Equal("Сторонні бібліотеки", localization.AboutThirdPartyLibraries);
+            Assert.Equal("Ліцензовано за GNU GPL v3 або новішою версією", localization.AboutLicense);
+        }
+        finally
+        {
+            localization.Culture = originalCulture;
+        }
+    }
+}
 
 public sealed class ProjectFileServiceTests
 {

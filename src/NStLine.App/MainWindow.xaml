@@ -90,10 +90,22 @@
                             <TextBlock Text="{Binding ButtonClear}" />
                         </StackPanel>
                     </Button>
-                    <TextBlock Margin="14,0,6,0" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelExactTimeLimit}" />
-                    <TextBox Width="68" VerticalContentAlignment="Center" Text="{Binding ExactTimeLimitSeconds, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                    <TextBlock Margin="14,0,6,0" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelExactProfile}" />
+                    <ComboBox Width="130" SelectedValuePath="Tag" SelectedValue="{Binding SelectedExactProfileKey, Mode=TwoWay}" VerticalContentAlignment="Center"
+                              ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TooltipExactProfile}"
+                              Style="{StaticResource AppMaterialComboBoxStyle}">
+                        <ComboBoxItem Tag="fast" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ProfileFast}" />
+                        <ComboBoxItem Tag="balanced" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ProfileBalanced}" />
+                        <ComboBoxItem Tag="custom" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ProfileCustom}" />
+                    </ComboBox>
+                    <TextBlock Margin="10,0,6,0" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelExactTimeLimit}" />
+                    <TextBox Width="68" VerticalContentAlignment="Center" Style="{StaticResource ExactLimitTextBoxStyle}"
+                             ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TooltipExactTimeLimit}"
+                             Text="{Binding ExactTimeLimitSeconds, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                     <TextBlock Margin="10,0,6,0" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelExactPatternLimit}" />
-                    <TextBox Width="92" VerticalContentAlignment="Center" Text="{Binding ExactMaxPatternCount, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                    <TextBox Width="92" VerticalContentAlignment="Center" Style="{StaticResource ExactLimitTextBoxStyle}"
+                             ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TooltipExactPatternLimit}"
+                             Text="{Binding ExactMaxPatternCount, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding CancelCalculationCommand}" Margin="0,0,6,0">
@@ -132,10 +144,14 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTaskMaterials}" FontWeight="SemiBold" />
-                    <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
                         <ItemsControl ItemsSource="{Binding ProjectMaterials}">
                             <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                                <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -157,7 +173,7 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <materialDesign:PopupBox ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TooltipAddMaterial}" StaysOpen="False">
+                        <materialDesign:PopupBox Grid.Column="1" VerticalAlignment="Top" ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TooltipAddMaterial}" StaysOpen="False">
                             <materialDesign:PopupBox.ToggleContent>
                                 <materialDesign:PackIcon Kind="Plus" Width="18" Height="18" />
                             </materialDesign:PopupBox.ToggleContent>
@@ -170,7 +186,7 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </materialDesign:PopupBox>
-                    </StackPanel>
+                    </Grid>
 
                     <ToolBarTray Grid.Row="4" Background="Transparent">
                         <ToolBar Background="Transparent">

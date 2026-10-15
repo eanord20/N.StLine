@@ -47,6 +47,15 @@
         <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
 
+    <Style x:Key="ExactLimitTextBoxStyle" TargetType="TextBox">
+        <Setter Property="IsReadOnly" Value="True" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding SelectedExactProfileKey}" Value="custom">
+                <Setter Property="IsReadOnly" Value="False" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
     <Style x:Key="MaterialChipStyle" TargetType="Button" BasedOn="{StaticResource AppButtonStyle}">
         <Setter Property="Width" Value="Auto" />
         <Setter Property="Height" Value="32" />

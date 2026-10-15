@@ -27,7 +27,20 @@
                    HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="380" Margin="0,12,0,0" />
         <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=AboutCopyright}"
                    HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="380" Margin="0,12,0,0" Opacity="0.75" FontSize="12" />
-        <Button Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonOk}"
-                IsDefault="True" Margin="0,20,0,0" MinWidth="90" HorizontalAlignment="Center" Click="Ok_Click" />
+        <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=AboutLicense}"
+                   HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="380" Margin="0,2,0,0" Opacity="0.75" FontSize="12" />
+        <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=AboutThirdPartyLibraries}"
+                   HorizontalAlignment="Center" FontWeight="SemiBold" Margin="0,16,0,0" />
+        <TextBlock HorizontalAlignment="Center" TextAlignment="Center" Margin="0,4,0,0" Opacity="0.75" FontSize="12">
+            <Run Text="DocX 5.0.0" /><LineBreak />
+            <Run Text="MaterialDesignThemes 4.9.0" /><LineBreak />
+            <Run Text="System.Drawing.Common 8.0.0" />
+        </TextBlock>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+            <Button Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonLicense}"
+                    MinWidth="90" Margin="0,0,8,0" Click="License_Click" />
+            <Button Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonOk}"
+                    IsDefault="True" MinWidth="90" Click="Ok_Click" />
+        </StackPanel>
     </StackPanel>
 </Window>

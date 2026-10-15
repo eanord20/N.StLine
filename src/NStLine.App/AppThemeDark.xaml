@@ -109,12 +109,27 @@
         <Setter Property="CaretBrush" Value="{DynamicResource MaterialDesignBody}" />
     </Style>
 
-    <Style TargetType="{x:Type ComboBox}">
-        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
-        <Setter Property="Background" Value="{DynamicResource MaterialDesignTextBoxBackground}" />
+    <Style TargetType="{x:Type ToolTip}">
+        <Setter Property="Foreground" Value="{DynamicResource AppInputForegroundBrush}" />
+        <Setter Property="Background" Value="{DynamicResource AppInputDropDownBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignDivider}" />
+        <Setter Property="BorderThickness" Value="1" />
     </Style>
 
-    <Style x:Key="AppMaterialComboBoxStyle" TargetType="{x:Type ComboBox}">
+    <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource MaterialDesignComboBox}">
+        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignTextBoxBackground}" />
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="{x:Type ComboBoxItem}">
+                    <Setter Property="Foreground" Value="{DynamicResource AppInputForegroundBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource AppInputDropDownBackgroundBrush}" />
+                </Style>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="AppMaterialComboBoxStyle" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource MaterialDesignComboBox}">
         <Setter Property="Foreground" Value="{DynamicResource AppInputForegroundBrush}" />
         <Setter Property="Background" Value="{DynamicResource AppInputBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource AppInputForegroundBrush}" />

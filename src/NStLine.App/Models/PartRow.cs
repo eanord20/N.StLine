@@ -30,19 +30,19 @@ public sealed class PartRow : INotifyPropertyChanged
     public string Name
     {
         get => _name;
-        set { _name = value ?? string.Empty; OnPropertyChanged(); ClearError(); }
+        set { _name = value ?? string.Empty; ClearError(); OnPropertyChanged(); }
     }
 
     public double Length
     {
         get => _length;
-        set { _length = value; OnPropertyChanged(); ClearError(); }
+        set { _length = value; ClearError(); OnPropertyChanged(); }
     }
 
     public int Quantity
     {
         get => _quantity;
-        set { _quantity = value; OnPropertyChanged(); ClearError(); }
+        set { _quantity = value; ClearError(); OnPropertyChanged(); }
     }
 
     public string? Error

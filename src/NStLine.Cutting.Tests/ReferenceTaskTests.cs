@@ -96,6 +96,19 @@ public class ReferenceTaskTests
         Assert.Throws<ArgumentException>(() => Engine.Solve(task, Options()));
     }
 
+    [Theory]
+    [InlineData(double.NaN, 3, 1000)]
+    [InlineData(double.PositiveInfinity, 3, 1000)]
+    [InlineData(6000, double.NaN, 1000)]
+    [InlineData(6000, double.PositiveInfinity, 1000)]
+    [InlineData(6000, 3, double.NaN)]
+    public void NonFiniteDimensions_AreRejected(double stock, double kerf, double length)
+    {
+        var task = Task(stock, kerf, ("P", length, 1));
+
+        Assert.Throws<ArgumentException>(() => Engine.Solve(task, Options()));
+    }
+
     [Fact]
     public void ReferenceExample_FromConcept()
     {
