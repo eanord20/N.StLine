@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>QaHarness1</AssemblyName>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NStLine.App">
+      <HintPath>..\..\..\src\NStLine.App\bin\Release\net8.0-windows\NStLine.App.dll</HintPath>
+    </Reference>
+    <Reference Include="NStLine.Core">
+      <HintPath>..\..\..\src\NStLine.App\bin\Release\net8.0-windows\NStLine.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="NStLine.Cutting">
+      <HintPath>..\..\..\src\NStLine.App\bin\Release\net8.0-windows\NStLine.Cutting.dll</HintPath>
+    </Reference>
+    <Reference Include="MaterialDesignThemes.Wpf">
+      <HintPath>..\..\..\src\NStLine.App\bin\Release\net8.0-windows\MaterialDesignThemes.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="MaterialDesignColors">
+      <HintPath>..\..\..\src\NStLine.App\bin\Release\net8.0-windows\MaterialDesignColors.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Xaml.Behaviors">
+      <HintPath>..\..\..\src\NStLine.App\bin\Release\net8.0-windows\Microsoft.Xaml.Behaviors.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Words.NET">
+      <HintPath>..\..\..\src\NStLine.App\bin\Release\net8.0-windows\Xceed.Words.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Document.NET">
+      <HintPath>..\..\..\src\NStLine.App\bin\Release\net8.0-windows\Xceed.Document.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Drawing.NET">
+      <HintPath>..\..\..\src\NStLine.App\bin\Release\net8.0-windows\Xceed.Drawing.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="SkiaSharp">
+      <HintPath>..\..\..\src\NStLine.App\bin\Release\net8.0-windows\SkiaSharp.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\src\NStLine.App\bin\Release\net8.0-windows\runtimes\**\*.dll" CopyToOutputDirectory="PreserveNewest" Link="runtimes\%(RecursiveDir)%(FileName)%(Extension)" />
+  </ItemGroup>
+  <Target Name="RunHarness" DependsOnTargets="Build">
+    <Exec Command="&quot;$(TargetDir)QaHarness1.exe&quot;" WorkingDirectory="$(TargetDir)" Timeout="300000" ConsoleToMSBuild="true" />
+  </Target>
+</Project>

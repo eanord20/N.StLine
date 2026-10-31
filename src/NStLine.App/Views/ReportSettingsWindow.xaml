@@ -1,0 +1,63 @@
+<Window x:Class="NStLine.App.Views.ReportSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:NStLine.App.Services"
+        xmlns:models="clr-namespace:NStLine.App.Models"
+        Style="{StaticResource SettingsWindowStyle}" WindowStartupLocation="CenterOwner"
+        Title="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuReportSettings}">
+    <DockPanel Margin="{StaticResource SettingsPadding}">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="{StaticResource SectionSpacing}">
+            <Button Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonOk}" Style="{StaticResource AppButtonStyle}" IsDefault="True" IsEnabled="{Binding IsValid}" Click="Ok_Click" />
+            <Button Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonCancel}" Style="{StaticResource AppButtonStyle}" IsCancel="True" Margin="{StaticResource SmallMargin}" />
+        </StackPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=HintReportOnly}" TextWrapping="Wrap" />
+                <GroupBox Style="{StaticResource SettingsGroupBoxStyle}" Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelFileNameSettings}" Margin="{StaticResource FieldSpacing}">
+                    <StackPanel Margin="{StaticResource CardPadding}">
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelTimestampPosition}" />
+                        <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding TimestampPosition}" Style="{StaticResource AppMaterialComboBoxStyle}">
+                            <ComboBoxItem Tag="{x:Static models:ReportTimestampPosition.None}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TimestampNone}" />
+                            <ComboBoxItem Tag="{x:Static models:ReportTimestampPosition.Prefix}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TimestampPrefix}" />
+                            <ComboBoxItem Tag="{x:Static models:ReportTimestampPosition.Suffix}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TimestampSuffix}" />
+                        </ComboBox>
+                        <WrapPanel>
+                            <CheckBox Style="{StaticResource SettingsCheckBoxStyle}" IsChecked="{Binding FileNameIncludeDate}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelIncludeDate}" />
+                            <CheckBox Style="{StaticResource SettingsCheckBoxStyle}" IsChecked="{Binding FileNameIncludeTime}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelIncludeTime}" />
+                        </WrapPanel>
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="{Binding PreviewFileName}" />
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Style="{StaticResource SettingsGroupBoxStyle}" Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelReportContent}" Margin="{StaticResource FieldSpacing}">
+                    <StackPanel Margin="{StaticResource CardPadding}">
+                        <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelReportHeading}" />
+                        <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" />
+                        <WrapPanel>
+                            <CheckBox Style="{StaticResource SettingsCheckBoxStyle}" IsChecked="{Binding TitleIncludeDate}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelIncludeDate}" />
+                            <CheckBox Style="{StaticResource SettingsCheckBoxStyle}" IsChecked="{Binding TitleIncludeTime}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelIncludeTime}" />
+                        </WrapPanel>
+                        <CheckBox Style="{StaticResource SettingsCheckBoxStyle}" IsChecked="{Binding ShowSummary}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelShowSummary}" />
+                        <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelPartSeparator}" />
+                        <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding PartSeparator}" Style="{StaticResource AppMaterialComboBoxStyle}">
+                            <ComboBoxItem Tag="{x:Static models:ReportPartSeparator.Plus}" Content="+" />
+                            <ComboBoxItem Tag="{x:Static models:ReportPartSeparator.Pipe}" Content="|" />
+                            <ComboBoxItem Tag="{x:Static models:ReportPartSeparator.Dash}" Content="-" />
+                            <ComboBoxItem Tag="{x:Static models:ReportPartSeparator.Asterisk}" Content="*" />
+                            <ComboBoxItem Tag="{x:Static models:ReportPartSeparator.Space}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelSpaceSeparator}" />
+                            <ComboBoxItem Tag="{x:Static models:ReportPartSeparator.Comma}" Content="," />
+                            <ComboBoxItem Tag="{x:Static models:ReportPartSeparator.Dot}" Content="." />
+                        </ComboBox>
+                        <CheckBox Style="{StaticResource SettingsCheckBoxStyle}" IsChecked="{Binding IncludeMaterial}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelIncludeMaterial}" />
+                        <CheckBox Style="{StaticResource SettingsCheckBoxStyle}" IsChecked="{Binding ShowPartNames}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelShowPartNames}" />
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Style="{StaticResource SettingsGroupBoxStyle}" Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelPreview}" Margin="{StaticResource FieldSpacing}">
+                    <StackPanel Margin="{StaticResource CardPadding}">
+                        <TextBlock Text="{Binding PreviewTitle}" TextWrapping="Wrap" FontWeight="SemiBold" />
+                        <TextBlock TextWrapping="Wrap" Margin="{StaticResource FieldSpacing}"><Run Text="{Binding PreviewMaterial, Mode=OneWay}" /><Run Text="{Binding PreviewQuantity, Mode=OneWay}" /><Run Text="{Binding PreviewDetails, Mode=OneWay}" /></TextBlock>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

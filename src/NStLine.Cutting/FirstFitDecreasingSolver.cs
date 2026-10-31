@@ -1,25 +1,29 @@
+using System.Numerics;
 using NStLine.Core.Models;
 
 namespace NStLine.Cutting;
 
 internal static class FirstFitDecreasingSolver
 {
-    public static CuttingResult Solve(CuttingTask task, CuttingOptions options)
+    public static CuttingResult Solve(CuttingTask task, CuttingOptions options, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var copies = task.Parts
-            .SelectMany(p => Enumerable.Range(1, p.Quantity)
-                .Select(i => new PlacedPart { Source = p, CopyIndex = i }))
-            .OrderByDescending(p => p.Source.Length)
-            .ThenBy(p => p.Source.Name)
-            .ToList();
+            .OrderByDescending(part => part.Length)
+            .ThenBy(part => part.Name)
+            .SelectMany(part => Enumerable.Range(1, part.Quantity)
+                .Select(index => new PlacedPart { Source = part, CopyIndex = index }));
 
+        var lengthScale = new LengthScale(task.Parts.Select(part => part.Length).Append(task.BarLength).Append(task.CutWidth).ToArray());
         var bars = new List<BarState>();
 
         foreach (var part in copies)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             bool placed = false;
             foreach (var bar in bars)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (bar.TryPlace(part, task.CutWidth))
                 {
                     placed = true;
@@ -29,7 +33,7 @@ internal static class FirstFitDecreasingSolver
 
             if (!placed)
             {
-                var newBar = new BarState(task.BarLength);
+                var newBar = new BarState(task.BarLength, lengthScale);
                 if (!newBar.TryPlace(part, task.CutWidth))
                 {
                     // Should be caught by validation; defensive fallback to a zero-remainder bar.
@@ -42,11 +46,12 @@ internal static class FirstFitDecreasingSolver
         var resultBars = new List<BarCutting>();
         for (int i = 0; i < bars.Count; i++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var bar = bars[i];
             int cutCount = bar.CutCount;
-            double partLength = bar.UsedPartLength;
+            var partLength = bar.UsedPartLength;
             double cutLoss = bar.CutLoss(task.CutWidth);
-            double remainder = task.BarLength - partLength - cutLoss;
+            var remainder = lengthScale.ToMillimeters(lengthScale[task.BarLength] - partLength - cutCount * lengthScale[task.CutWidth]);
 
             resultBars.Add(new BarCutting
             {
@@ -94,14 +99,16 @@ internal static class FirstFitDecreasingSolver
 
     private sealed class BarState
     {
-        public double Length { get; }
+        private readonly LengthScale _lengthScale;
+        public BigInteger Length { get; }
         public List<PlacedPart> Parts { get; } = new();
         public int CutCount { get; private set; }
-        public double UsedPartLength { get; private set; }
+        public BigInteger UsedPartLength { get; private set; }
 
-        public BarState(double length)
+        public BarState(double length, LengthScale lengthScale)
         {
-            Length = length;
+            _lengthScale = lengthScale;
+            Length = lengthScale[length];
         }
 
         public double CutLoss(double cutWidth) => CutCount * cutWidth;
@@ -109,10 +116,10 @@ internal static class FirstFitDecreasingSolver
         public bool TryPlace(PlacedPart part, double cutWidth)
         {
             int newCutCount = CutCount + 1;
-            double newPartLength = UsedPartLength + part.Source.Length;
-            double newUsedLength = newPartLength + newCutCount * cutWidth;
+            var newPartLength = UsedPartLength + _lengthScale[part.Source.Length];
+            var newUsedLength = newPartLength + newCutCount * _lengthScale[cutWidth];
 
-            if (newUsedLength <= Length + 1e-9)
+            if (newUsedLength <= Length)
             {
                 Parts.Add(part);
                 CutCount = newCutCount;

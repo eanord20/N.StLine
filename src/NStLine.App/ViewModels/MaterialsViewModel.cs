@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using NStLine.App.Commands;
+using NStLine.App.Services;
 using NStLine.Core.Models;
 
 namespace NStLine.App.ViewModels;
@@ -45,6 +46,34 @@ public sealed class MaterialsViewModel : INotifyPropertyChanged
         OkCommand = new RelayCommand(_ => Close(true));
         CancelCommand = new RelayCommand(_ => Close(false));
     }
+
+    public (int Added, int Skipped) ImportMaterials(IEnumerable<LinearMaterial> materials)
+    {
+        var incoming = materials.ToList();
+        MaterialsLibraryService.Validate(incoming);
+        var added = new List<LinearMaterial>();
+        var keys = Materials.Select(MaterialKey).ToHashSet();
+        var ids = Materials.Select(material => material.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var source in incoming)
+        {
+            if (!keys.Add(MaterialKey(source)))
+                continue;
+            var material = Clone(source);
+            material.Name = material.Name.Trim();
+            if (string.IsNullOrWhiteSpace(material.Id) || !ids.Add(material.Id))
+            {
+                do material.Id = Guid.NewGuid().ToString("N");
+                while (!ids.Add(material.Id));
+            }
+            added.Add(material);
+        }
+        foreach (var material in added)
+            Materials.Add(material);
+        return (added.Count, incoming.Count - added.Count);
+    }
+
+    private static (string Name, double Length, double CutWidth) MaterialKey(LinearMaterial material)
+        => (material.Name.Trim().ToUpperInvariant(), material.StandardLength, material.CutWidth);
 
     private void Add()
     {

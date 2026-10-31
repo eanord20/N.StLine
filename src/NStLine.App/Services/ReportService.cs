@@ -1,5 +1,6 @@
 using System.Globalization;
 using NStLine.App.Formatters;
+using NStLine.App.Models;
 using NStLine.Core.Constants;
 using NStLine.Core.Models;
 using Xceed.Document.NET;
@@ -9,33 +10,39 @@ namespace NStLine.App.Services;
 
 public sealed class ReportService : IReportService
 {
-    public void GenerateReport(string outputPath, ProjectCuttingTask task, ProjectCuttingResult result)
+    public void GenerateReport(string outputPath, ProjectCuttingTask task, ProjectCuttingResult result,
+        ReportGenerationOptions? options = null)
     {
-        var localization = LocalizationService.Instance;
+        options ??= new ReportGenerationOptions(new ReportSettings(), DateTime.Now, LocalizationService.Instance.Culture);
+        var localization = LocalizationService.ForCulture(options.Culture);
         var culture = CultureInfo.GetCultureInfo(localization.Culture == "ua" ? "uk-UA" : "en-US");
         using var document = DocX.Create(outputPath);
 
-        InsertParagraph(document, $"{AppConstants.ApplicationName} — {localization.ReportTitle}").FontSize(18).Bold();
+        InsertParagraph(document, ReportTextFormatter.Title(options, localization)).FontSize(18).Bold();
         InsertParagraph(document);
         foreach (var materialResult in result.Materials)
             InsertParagraph(document, MaterialHeading(materialResult, localization, culture)).FontSize(16).Bold();
 
         InsertParagraph(document);
-        InsertParagraph(document, localization.LabelSummary).FontSize(14).Bold();
+        if (options.Settings.ShowSummary)
+            InsertParagraph(document, localization.LabelSummary).FontSize(14).Bold();
         InsertParagraph(document, $"{localization.ReportStatus}: {(result.Status == CalculationStatus.Optimal ? localization.StatusOptimal : localization.StatusBestFound)}");
-        InsertParagraph(document, $"{localization.LabelTotalPartLength}: {result.TotalPartLength.ToString("0.#", culture)} {localization.UnitMillimeters}");
-        InsertParagraph(document, $"{localization.LabelTotalCutLoss}: {result.TotalCutLoss.ToString("0.#", culture)} {localization.UnitMillimeters}");
-        InsertParagraph(document, $"{localization.LabelTotalRemainder}: {result.TotalRemainder.ToString("0.#", culture)} {localization.UnitMillimeters}");
-        InsertParagraph(document, $"{localization.LabelUtilization}: {result.UtilizationPercent.ToString("0.#", culture)}%");
+        if (options.Settings.ShowSummary)
+        {
+            InsertParagraph(document, $"{localization.LabelTotalPartLength}: {result.TotalPartLength.ToString("0.#", culture)} {localization.UnitMillimeters}");
+            InsertParagraph(document, $"{localization.LabelTotalCutLoss}: {result.TotalCutLoss.ToString("0.#", culture)} {localization.UnitMillimeters}");
+            InsertParagraph(document, $"{localization.LabelTotalRemainder}: {result.TotalRemainder.ToString("0.#", culture)} {localization.UnitMillimeters}");
+            InsertParagraph(document, $"{localization.LabelUtilization}: {result.UtilizationPercent.ToString("0.#", culture)}%");
+        }
 
         foreach (var materialResult in result.Materials)
-            InsertMaterialSection(document, materialResult, localization, culture);
+            InsertMaterialSection(document, materialResult, localization, culture, options.Settings);
 
         document.Save();
     }
 
     private static void InsertMaterialSection(DocX document, MaterialCuttingResult materialResult,
-        LocalizationService localization, CultureInfo culture)
+        LocalizationService localization, CultureInfo culture, ReportSettings settings)
     {
         var task = materialResult.Task;
         var result = materialResult.Result;
@@ -62,8 +69,10 @@ public sealed class ReportService : IReportService
             $"{localization.LabelUtilization}: {result.UtilizationPercent.ToString("0.#", culture)}%");
         foreach (var pattern in result.Patterns)
         {
-            var parts = CuttingTextFormatter.FormatGroupedParts(pattern.Parts, culture, localization.UnitMillimeters);
-            InsertParagraph(document, $"×{pattern.Multiplicity}: {parts} | {localization.ColumnRemainder.ToLower(culture)} {pattern.Remainder.ToString("0.#", culture)}");
+            var paragraph = InsertParagraph(document, ReportTextFormatter.MaterialPrefix(materialResult, settings, culture, localization));
+            paragraph.Append($"×{pattern.Multiplicity}").Font(AppConstants.ReportFontFamily).Bold(false);
+            paragraph.Append(ReportTextFormatter.PatternDetails(pattern, settings, culture, localization))
+                .Font(AppConstants.ReportFontFamily).Bold(false);
         }
     }
 

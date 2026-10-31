@@ -21,6 +21,10 @@ public sealed class ProjectCuttingEngine : IProjectCuttingEngine
         ArgumentNullException.ThrowIfNull(task);
         ArgumentNullException.ThrowIfNull(options);
 
+        if (task.Materials == null || task.Parts == null ||
+            task.Materials.Any(material => material == null) || task.Parts.Any(part => part == null))
+            throw new ArgumentException("Project collections must not contain null entries.", nameof(task));
+
         if (task.Materials.Count == 0)
             throw new ArgumentException("At least one material is required.", nameof(task));
 
@@ -63,6 +67,9 @@ public sealed class ProjectCuttingEngine : IProjectCuttingEngine
             progress?.Report((index + 1.0) / nonEmptyMaterials.Count);
         }
 
-        return new ProjectCuttingResult { Materials = results };
+        var projectResult = new ProjectCuttingResult { Materials = results };
+        CuttingEngine.EnsureFiniteTotals(projectResult.TotalBarLength, projectResult.TotalPartLength,
+            projectResult.TotalCutLoss, projectResult.TotalRemainder, projectResult.UtilizationPercent);
+        return projectResult;
     }
 }

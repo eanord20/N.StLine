@@ -1,0 +1,27 @@
+<Window x:Class="NStLine.App.Views.CalculationSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:NStLine.App.Services"
+        Style="{StaticResource SettingsWindowStyle}" WindowStartupLocation="CenterOwner"
+        Title="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuCalculationSettings}">
+    <DockPanel Margin="{StaticResource SettingsPadding}">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="{StaticResource SectionSpacing}">
+            <Button Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonOk}" Style="{StaticResource AppButtonStyle}" IsDefault="True" IsEnabled="{Binding IsValid}" Click="Ok_Click" />
+            <Button Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonCancel}" Style="{StaticResource AppButtonStyle}" IsCancel="True" Margin="{StaticResource SmallMargin}" />
+        </StackPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelExactProfile}" />
+                <ComboBox SelectedValuePath="Tag" SelectedValue="{Binding SelectedExactProfileKey}" Style="{StaticResource AppMaterialComboBoxStyle}" ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TooltipExactProfile}">
+                    <ComboBoxItem Tag="fast" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ProfileFast}" />
+                    <ComboBoxItem Tag="balanced" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ProfileBalanced}" />
+                    <ComboBoxItem Tag="custom" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ProfileCustom}" />
+                </ComboBox>
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelExactTimeLimit}" />
+                <TextBox x:Name="TimeLimitInput" IsEnabled="{Binding IsCustom}" Text="{Binding ExactTimeLimitSeconds, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TooltipExactTimeLimit}" />
+                <TextBlock Style="{StaticResource SettingsLabelStyle}" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelExactPatternLimit}" />
+                <TextBox x:Name="PatternLimitInput" IsEnabled="{Binding IsCustom}" Text="{Binding ExactMaxPatternCount, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TooltipExactPatternLimit}" />
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

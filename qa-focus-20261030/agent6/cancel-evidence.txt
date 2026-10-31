@@ -1,0 +1,10 @@
+{
+  "name": "cancel",
+  "data": {
+    "type": "OperationCanceledException",
+    "cancelAt": 28,
+    "elapsedMs": 838,
+    "delayAfterCancelMs": 810,
+    "peakBytes": 44732416
+  }
+}

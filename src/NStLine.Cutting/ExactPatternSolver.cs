@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Numerics;
 using NStLine.Core.Models;
 
 namespace NStLine.Cutting;
@@ -11,6 +12,10 @@ internal sealed class ExactPatternSolver
     private readonly int _partTypeCount;
     private readonly List<Pattern> _patterns = new();
     private readonly int[] _maxCountsPerType;
+    private readonly LengthScale _lengthScale;
+    private readonly BigInteger _barLength;
+    private readonly BigInteger _cutWidth;
+    private readonly BigInteger[] _partLengths;
     private int[][]? _suffixMaxCounts;
 
     private int _bestBarCount = int.MaxValue;
@@ -38,6 +43,10 @@ internal sealed class ExactPatternSolver
             .ThenByDescending(part => part.Quantity)
             .ThenBy(part => part.Id, StringComparer.Ordinal)
             .ToList();
+        _lengthScale = new LengthScale(_parts.Select(part => part.Length).Append(task.BarLength).Append(task.CutWidth).ToArray());
+        _barLength = _lengthScale[task.BarLength];
+        _cutWidth = _lengthScale[task.CutWidth];
+        _partLengths = _parts.Select(part => _lengthScale[part.Length]).ToArray();
         _partTypeCount = task.Parts.Count;
         _maxCountsPerType = new int[_partTypeCount];
         _timeLimit = TimeSpan.FromSeconds(options.TimeLimitSeconds);
@@ -99,11 +108,11 @@ internal sealed class ExactPatternSolver
     private bool GeneratePatterns()
     {
         var counts = new int[_partTypeCount];
-        GenerateRecursive(0, 0.0, 0, counts);
+        GenerateRecursive(0, BigInteger.Zero, 0, counts);
         return _patterns.Count <= _options.MaxPatternCount;
     }
 
-    private void GenerateRecursive(int index, double usedLength, int partCount, int[] counts)
+    private void GenerateRecursive(int index, BigInteger usedLength, int partCount, int[] counts)
     {
         if (_stopwatch.Elapsed >= _timeLimit)
         {
@@ -116,27 +125,16 @@ internal sealed class ExactPatternSolver
             if (partCount == 0)
                 return;
 
-            double remainder = _task.BarLength - usedLength - partCount * _task.CutWidth;
-            if (remainder >= -_options.ToleranceMm)
-            {
-                remainder = Math.Max(0.0, remainder);
-                _patterns.Add(new Pattern(counts.ToArray(), usedLength, partCount, remainder));
-            }
+            var remainder = _barLength - usedLength - partCount * _cutWidth;
+            if (remainder >= 0)
+                _patterns.Add(new Pattern(counts.ToArray(), usedLength, partCount, _lengthScale.ToMillimeters(remainder)));
             return;
         }
 
-        double length = _parts[index].Length;
-        double denominator = length + _task.CutWidth;
-        if (denominator <= 0)
-            denominator = length;
-
-        int maxCount = 0;
-        if (denominator > 0)
-        {
-            double available = _task.BarLength - usedLength - partCount * _task.CutWidth;
-            maxCount = (int)Math.Floor(available / denominator);
-        }
-        maxCount = Math.Min(_parts[index].Quantity, Math.Max(0, maxCount));
+        var length = _partLengths[index];
+        var denominator = length + _cutWidth;
+        var available = _barLength - usedLength - partCount * _cutWidth;
+        var maxCount = (int)BigInteger.Min(_parts[index].Quantity, BigInteger.Max(0, available / denominator));
 
         for (int c = maxCount; c >= 0; c--)
         {
@@ -330,8 +328,8 @@ internal sealed class ExactPatternSolver
 
     private int ComputeLowerBound(int[] remaining, int patternIndex)
     {
-        double totalPartLength = 0.0;
-        int totalParts = 0;
+        var totalPartLength = BigInteger.Zero;
+        var totalParts = BigInteger.Zero;
         int perTypeMax = 0;
         var maxCounts = _suffixMaxCounts != null && patternIndex < _suffixMaxCounts.Length
             ? _suffixMaxCounts[patternIndex]
@@ -342,7 +340,7 @@ internal sealed class ExactPatternSolver
             if (remaining[i] <= 0)
                 continue;
 
-            totalPartLength += remaining[i] * _parts[i].Length;
+            totalPartLength += remaining[i] * _partLengths[i];
             totalParts += remaining[i];
 
             if (maxCounts[i] > 0)
@@ -357,8 +355,8 @@ internal sealed class ExactPatternSolver
             }
         }
 
-        double totalNeeded = totalPartLength + totalParts * _task.CutWidth;
-        int lengthBound = (int)Math.Ceiling(totalNeeded / _task.BarLength);
+        var totalNeeded = totalPartLength + totalParts * _cutWidth;
+        var lengthBound = (int)BigInteger.Min(int.MaxValue, (totalNeeded + _barLength - 1) / _barLength);
 
         return Math.Max(lengthBound, perTypeMax);
     }
@@ -453,11 +451,11 @@ internal sealed class ExactPatternSolver
     private sealed class Pattern
     {
         public int[] Counts { get; }
-        public double UsedLength { get; }
+        public BigInteger UsedLength { get; }
         public int PartCount { get; }
         public double Remainder { get; }
 
-        public Pattern(int[] counts, double usedLength, int partCount, double remainder)
+        public Pattern(int[] counts, BigInteger usedLength, int partCount, double remainder)
         {
             Counts = counts;
             UsedLength = usedLength;

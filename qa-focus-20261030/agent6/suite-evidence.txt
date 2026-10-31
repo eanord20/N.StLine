@@ -1,0 +1,1391 @@
+{
+  "name": "decimal-ffd-trap",
+  "data": {
+    "input": {
+      "BarLength": 1,
+      "CutWidth": 0,
+      "parts": [
+        {
+          "Id": "p0",
+          "Length": 0.6,
+          "Quantity": 1
+        },
+        {
+          "Id": "p1",
+          "Length": 0.5,
+          "Quantity": 1
+        },
+        {
+          "Id": "p2",
+          "Length": 0.3,
+          "Quantity": 1
+        },
+        {
+          "Id": "p3",
+          "Length": 0.2,
+          "Quantity": 3
+        }
+      ]
+    },
+    "status": "Optimal",
+    "Method": "Exact branch-and-bound",
+    "BestFoundReason": 0,
+    "TotalBarCount": 3,
+    "TotalRemainder": 0.9999999999999999,
+    "TotalPartLength": 2,
+    "TotalCutLoss": 0,
+    "UtilizationPercent": 66.66666666666666,
+    "GeneratedPatterns": 15,
+    "ExploredNodes": 152,
+    "ElapsedSeconds": 0.0048099,
+    "bars": [
+      {
+        "Index": 1,
+        "Remainder": 0.5,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 0.5,
+            "CopyIndex": 1
+          }
+        ]
+      },
+      {
+        "Index": 2,
+        "Remainder": 0.4,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 0.6,
+            "CopyIndex": 1
+          }
+        ]
+      },
+      {
+        "Index": 3,
+        "Remainder": 0.09999999999999987,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p2",
+            "Length": 0.3,
+            "CopyIndex": 1
+          },
+          {
+            "Id": "p3",
+            "Length": 0.2,
+            "CopyIndex": 1
+          },
+          {
+            "Id": "p3",
+            "Length": 0.2,
+            "CopyIndex": 2
+          },
+          {
+            "Id": "p3",
+            "Length": 0.2,
+            "CopyIndex": 3
+          }
+        ]
+      }
+    ],
+    "patterns": [
+      {
+        "Multiplicity": 1,
+        "Remainder": 0.5,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 0.5
+          }
+        ]
+      },
+      {
+        "Multiplicity": 1,
+        "Remainder": 0.4,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 0.6
+          }
+        ]
+      },
+      {
+        "Multiplicity": 1,
+        "Remainder": 0.09999999999999987,
+        "parts": [
+          {
+            "Id": "p2",
+            "Length": 0.3
+          },
+          {
+            "Id": "p3",
+            "Length": 0.2
+          },
+          {
+            "Id": "p3",
+            "Length": 0.2
+          },
+          {
+            "Id": "p3",
+            "Length": 0.2
+          }
+        ]
+      }
+    ]
+  }
+}
+{
+  "name": "tiny",
+  "data": {
+    "input": {
+      "BarLength": 1E-10,
+      "CutWidth": 0,
+      "parts": [
+        {
+          "Id": "p0",
+          "Length": 6E-11,
+          "Quantity": 2
+        }
+      ]
+    },
+    "status": "Optimal",
+    "Method": "Exact branch-and-bound",
+    "BestFoundReason": 0,
+    "TotalBarCount": 1,
+    "TotalRemainder": -1.9999999999999996E-11,
+    "TotalPartLength": 1.2E-10,
+    "TotalCutLoss": 0,
+    "UtilizationPercent": 120,
+    "GeneratedPatterns": 1,
+    "ExploredNodes": 1,
+    "ElapsedSeconds": 0.0002391,
+    "bars": [
+      {
+        "Index": 1,
+        "Remainder": -1.9999999999999996E-11,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 6E-11,
+            "CopyIndex": 1
+          },
+          {
+            "Id": "p0",
+            "Length": 6E-11,
+            "CopyIndex": 2
+          }
+        ]
+      }
+    ],
+    "patterns": [
+      {
+        "Multiplicity": 1,
+        "Remainder": -1.9999999999999996E-11,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 6E-11
+          },
+          {
+            "Id": "p0",
+            "Length": 6E-11
+          }
+        ]
+      }
+    ]
+  }
+}
+{
+  "name": "overflow-total",
+  "data": {
+    "input": {
+      "BarLength": 1E+308,
+      "CutWidth": 0,
+      "parts": [
+        {
+          "Id": "p0",
+          "Length": 9E+307,
+          "Quantity": 2
+        }
+      ]
+    },
+    "status": "Optimal",
+    "Method": "Exact branch-and-bound",
+    "BestFoundReason": 0,
+    "TotalBarCount": 2,
+    "TotalRemainder": 1.9999999999999992E+307,
+    "TotalPartLength": "Infinity",
+    "TotalCutLoss": 0,
+    "UtilizationPercent": "NaN",
+    "GeneratedPatterns": 1,
+    "ExploredNodes": 1,
+    "ElapsedSeconds": 6.85E-05,
+    "bars": [
+      {
+        "Index": 1,
+        "Remainder": 9.999999999999996E+306,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 9E+307,
+            "CopyIndex": 1
+          }
+        ]
+      },
+      {
+        "Index": 2,
+        "Remainder": 9.999999999999996E+306,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 9E+307,
+            "CopyIndex": 2
+          }
+        ]
+      }
+    ],
+    "patterns": [
+      {
+        "Multiplicity": 2,
+        "Remainder": 9.999999999999996E+306,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 9E+307
+          }
+        ]
+      }
+    ]
+  }
+}
+{
+  "name": "floor-int-overflow",
+  "data": {
+    "input": {
+      "BarLength": 6000,
+      "CutWidth": 0,
+      "parts": [
+        {
+          "Id": "p0",
+          "Length": 1E-06,
+          "Quantity": 2
+        }
+      ]
+    },
+    "status": "BestFound",
+    "Method": "First Fit Decreasing",
+    "BestFoundReason": 4,
+    "TotalBarCount": 1,
+    "TotalRemainder": 5999.999998,
+    "TotalPartLength": 2E-06,
+    "TotalCutLoss": 0,
+    "UtilizationPercent": 3.3333333333333334E-08,
+    "GeneratedPatterns": 0,
+    "ExploredNodes": 0,
+    "ElapsedSeconds": 8.65E-05,
+    "bars": [
+      {
+        "Index": 1,
+        "Remainder": 5999.999998,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 1E-06,
+            "CopyIndex": 1
+          },
+          {
+            "Id": "p0",
+            "Length": 1E-06,
+            "CopyIndex": 2
+          }
+        ]
+      }
+    ],
+    "patterns": [
+      {
+        "Multiplicity": 1,
+        "Remainder": 5999.999998,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 1E-06
+          },
+          {
+            "Id": "p0",
+            "Length": 1E-06
+          }
+        ]
+      }
+    ]
+  }
+}
+{
+  "name": "decimal-exact",
+  "data": {
+    "input": {
+      "BarLength": 0.3,
+      "CutWidth": 0,
+      "parts": [
+        {
+          "Id": "p0",
+          "Length": 0.1,
+          "Quantity": 3
+        }
+      ]
+    },
+    "status": "Optimal",
+    "Method": "Exact branch-and-bound",
+    "BestFoundReason": 0,
+    "TotalBarCount": 1,
+    "TotalRemainder": -5.551115123125783E-17,
+    "TotalPartLength": 0.30000000000000004,
+    "TotalCutLoss": 0,
+    "UtilizationPercent": 100.00000000000003,
+    "GeneratedPatterns": 2,
+    "ExploredNodes": 1,
+    "ElapsedSeconds": 4.51E-05,
+    "bars": [
+      {
+        "Index": 1,
+        "Remainder": -5.551115123125783E-17,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 0.1,
+            "CopyIndex": 1
+          },
+          {
+            "Id": "p0",
+            "Length": 0.1,
+            "CopyIndex": 2
+          },
+          {
+            "Id": "p0",
+            "Length": 0.1,
+            "CopyIndex": 3
+          }
+        ]
+      }
+    ],
+    "patterns": [
+      {
+        "Multiplicity": 1,
+        "Remainder": -5.551115123125783E-17,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 0.1
+          },
+          {
+            "Id": "p0",
+            "Length": 0.1
+          },
+          {
+            "Id": "p0",
+            "Length": 0.1
+          }
+        ]
+      }
+    ]
+  }
+}
+{
+  "name": "null-part",
+  "data": {
+    "error": "System.NullReferenceException: Object reference not set to an instance of an object.\r\n   at NStLine.Cutting.FirstFitDecreasingSolver.\u003C\u003Ec.\u003CSolve\u003Eb__0_0(PartRequirement p) in D:\\My_project\\N.StLine\\src\\NStLine.Cutting\\FirstFitDecreasingSolver.cs:line 10\r\n   at System.Linq.Enumerable.SelectManySingleSelectorIterator\u00602.ToArray()\r\n   at System.Linq.Buffer\u00601..ctor(IEnumerable\u00601 source)\r\n   at System.Linq.OrderedEnumerable\u00601.ToList()\r\n   at NStLine.Cutting.FirstFitDecreasingSolver.Solve(CuttingTask task, CuttingOptions options) in D:\\My_project\\N.StLine\\src\\NStLine.Cutting\\FirstFitDecreasingSolver.cs:line 9\r\n   at NStLine.Cutting.Services.CuttingEngine.Solve(CuttingTask task, CuttingOptions options, IProgress\u00601 progress, CancellationToken cancellationToken) in D:\\My_project\\N.StLine\\src\\NStLine.Cutting\\Services\\CuttingEngine.cs:line 18\r\n   at Program.\u003CMain\u003E$(String[] args) in D:\\My_project\\N.StLine\\qa-focus-20261030\\agent6\\Program.cs:line 21"
+  }
+}
+{
+  "name": "oracle-mismatch",
+  "data": {
+    "caseIndex": 1791,
+    "expected": 2,
+    "actual": {
+      "input": {
+        "BarLength": 2.3,
+        "CutWidth": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 0.7,
+            "Quantity": 1
+          },
+          {
+            "Id": "p1",
+            "Length": 0.9,
+            "Quantity": 2
+          },
+          {
+            "Id": "p2",
+            "Length": 0.7,
+            "Quantity": 3
+          }
+        ]
+      },
+      "status": "Optimal",
+      "Method": "Exact branch-and-bound",
+      "BestFoundReason": 0,
+      "TotalBarCount": 3,
+      "TotalRemainder": 2.2999999999999994,
+      "TotalPartLength": 4.6,
+      "TotalCutLoss": 0,
+      "UtilizationPercent": 66.66666666666666,
+      "GeneratedPatterns": 11,
+      "ExploredNodes": 111,
+      "ElapsedSeconds": 6.09E-05,
+      "bars": [
+        {
+          "Index": 1,
+          "Remainder": 0.8999999999999999,
+          "CutLoss": 0,
+          "parts": [
+            {
+              "Id": "p2",
+              "Length": 0.7,
+              "CopyIndex": 1
+            },
+            {
+              "Id": "p0",
+              "Length": 0.7,
+              "CopyIndex": 1
+            }
+          ]
+        },
+        {
+          "Index": 2,
+          "Remainder": 0.6999999999999997,
+          "CutLoss": 0,
+          "parts": [
+            {
+              "Id": "p1",
+              "Length": 0.9,
+              "CopyIndex": 1
+            },
+            {
+              "Id": "p2",
+              "Length": 0.7,
+              "CopyIndex": 1
+            }
+          ]
+        },
+        {
+          "Index": 3,
+          "Remainder": 0.6999999999999997,
+          "CutLoss": 0,
+          "parts": [
+            {
+              "Id": "p1",
+              "Length": 0.9,
+              "CopyIndex": 1
+            },
+            {
+              "Id": "p2",
+              "Length": 0.7,
+              "CopyIndex": 1
+            }
+          ]
+        }
+      ],
+      "patterns": [
+        {
+          "Multiplicity": 1,
+          "Remainder": 0.8999999999999999,
+          "parts": [
+            {
+              "Id": "p2",
+              "Length": 0.7
+            },
+            {
+              "Id": "p0",
+              "Length": 0.7
+            }
+          ]
+        },
+        {
+          "Multiplicity": 2,
+          "Remainder": 0.6999999999999997,
+          "parts": [
+            {
+              "Id": "p1",
+              "Length": 0.9
+            },
+            {
+              "Id": "p2",
+              "Length": 0.7
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+{
+  "name": "oracle-mismatch",
+  "data": {
+    "caseIndex": 1876,
+    "expected": 2,
+    "actual": {
+      "input": {
+        "BarLength": 5,
+        "CutWidth": 0.2,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 2.7,
+            "Quantity": 1
+          },
+          {
+            "Id": "p1",
+            "Length": 0.5,
+            "Quantity": 3
+          },
+          {
+            "Id": "p2",
+            "Length": 1.3,
+            "Quantity": 3
+          }
+        ]
+      },
+      "status": "Optimal",
+      "Method": "Exact branch-and-bound",
+      "BestFoundReason": 0,
+      "TotalBarCount": 3,
+      "TotalRemainder": 5.5,
+      "TotalPartLength": 8.100000000000001,
+      "TotalCutLoss": 1.4000000000000001,
+      "UtilizationPercent": 54.000000000000014,
+      "GeneratedPatterns": 15,
+      "ExploredNodes": 174,
+      "ElapsedSeconds": 0.0001032,
+      "bars": [
+        {
+          "Index": 1,
+          "Remainder": 4.3,
+          "CutLoss": 0.2,
+          "parts": [
+            {
+              "Id": "p1",
+              "Length": 0.5,
+              "CopyIndex": 1
+            }
+          ]
+        },
+        {
+          "Index": 2,
+          "Remainder": 0.6999999999999997,
+          "CutLoss": 0.6000000000000001,
+          "parts": [
+            {
+              "Id": "p0",
+              "Length": 2.7,
+              "CopyIndex": 1
+            },
+            {
+              "Id": "p1",
+              "Length": 0.5,
+              "CopyIndex": 1
+            },
+            {
+              "Id": "p1",
+              "Length": 0.5,
+              "CopyIndex": 2
+            }
+          ]
+        },
+        {
+          "Index": 3,
+          "Remainder": 0.49999999999999956,
+          "CutLoss": 0.6000000000000001,
+          "parts": [
+            {
+              "Id": "p2",
+              "Length": 1.3,
+              "CopyIndex": 1
+            },
+            {
+              "Id": "p2",
+              "Length": 1.3,
+              "CopyIndex": 2
+            },
+            {
+              "Id": "p2",
+              "Length": 1.3,
+              "CopyIndex": 3
+            }
+          ]
+        }
+      ],
+      "patterns": [
+        {
+          "Multiplicity": 1,
+          "Remainder": 4.3,
+          "parts": [
+            {
+              "Id": "p1",
+              "Length": 0.5
+            }
+          ]
+        },
+        {
+          "Multiplicity": 1,
+          "Remainder": 0.6999999999999997,
+          "parts": [
+            {
+              "Id": "p0",
+              "Length": 2.7
+            },
+            {
+              "Id": "p1",
+              "Length": 0.5
+            },
+            {
+              "Id": "p1",
+              "Length": 0.5
+            }
+          ]
+        },
+        {
+          "Multiplicity": 1,
+          "Remainder": 0.49999999999999956,
+          "parts": [
+            {
+              "Id": "p2",
+              "Length": 1.3
+            },
+            {
+              "Id": "p2",
+              "Length": 1.3
+            },
+            {
+              "Id": "p2",
+              "Length": 1.3
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+{
+  "name": "oracle-mismatch",
+  "data": {
+    "caseIndex": 2986,
+    "expected": 3,
+    "actual": {
+      "input": {
+        "BarLength": 2.5,
+        "CutWidth": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 0.8,
+            "Quantity": 3
+          },
+          {
+            "Id": "p1",
+            "Length": 0.6,
+            "Quantity": 3
+          },
+          {
+            "Id": "p2",
+            "Length": 1.1,
+            "Quantity": 3
+          }
+        ]
+      },
+      "status": "Optimal",
+      "Method": "Exact branch-and-bound",
+      "BestFoundReason": 0,
+      "TotalBarCount": 4,
+      "TotalRemainder": 2.499999999999999,
+      "TotalPartLength": 7.500000000000001,
+      "TotalCutLoss": 0,
+      "UtilizationPercent": 75.00000000000001,
+      "GeneratedPatterns": 14,
+      "ExploredNodes": 440,
+      "ElapsedSeconds": 0.0001974,
+      "bars": [
+        {
+          "Index": 1,
+          "Remainder": 1.3,
+          "CutLoss": 0,
+          "parts": [
+            {
+              "Id": "p1",
+              "Length": 0.6,
+              "CopyIndex": 1
+            },
+            {
+              "Id": "p1",
+              "Length": 0.6,
+              "CopyIndex": 2
+            }
+          ]
+        },
+        {
+          "Index": 2,
+          "Remainder": 0.7999999999999998,
+          "CutLoss": 0,
+          "parts": [
+            {
+              "Id": "p2",
+              "Length": 1.1,
+              "CopyIndex": 1
+            },
+            {
+              "Id": "p1",
+              "Length": 0.6,
+              "CopyIndex": 1
+            }
+          ]
+        },
+        {
+          "Index": 3,
+          "Remainder": 0.2999999999999998,
+          "CutLoss": 0,
+          "parts": [
+            {
+              "Id": "p2",
+              "Length": 1.1,
+              "CopyIndex": 1
+            },
+            {
+              "Id": "p2",
+              "Length": 1.1,
+              "CopyIndex": 2
+            }
+          ]
+        },
+        {
+          "Index": 4,
+          "Remainder": 0.09999999999999964,
+          "CutLoss": 0,
+          "parts": [
+            {
+              "Id": "p0",
+              "Length": 0.8,
+              "CopyIndex": 1
+            },
+            {
+              "Id": "p0",
+              "Length": 0.8,
+              "CopyIndex": 2
+            },
+            {
+              "Id": "p0",
+              "Length": 0.8,
+              "CopyIndex": 3
+            }
+          ]
+        }
+      ],
+      "patterns": [
+        {
+          "Multiplicity": 1,
+          "Remainder": 1.3,
+          "parts": [
+            {
+              "Id": "p1",
+              "Length": 0.6
+            },
+            {
+              "Id": "p1",
+              "Length": 0.6
+            }
+          ]
+        },
+        {
+          "Multiplicity": 1,
+          "Remainder": 0.7999999999999998,
+          "parts": [
+            {
+              "Id": "p2",
+              "Length": 1.1
+            },
+            {
+              "Id": "p1",
+              "Length": 0.6
+            }
+          ]
+        },
+        {
+          "Multiplicity": 1,
+          "Remainder": 0.2999999999999998,
+          "parts": [
+            {
+              "Id": "p2",
+              "Length": 1.1
+            },
+            {
+              "Id": "p2",
+              "Length": 1.1
+            }
+          ]
+        },
+        {
+          "Multiplicity": 1,
+          "Remainder": 0.09999999999999964,
+          "parts": [
+            {
+              "Id": "p0",
+              "Length": 0.8
+            },
+            {
+              "Id": "p0",
+              "Length": 0.8
+            },
+            {
+              "Id": "p0",
+              "Length": 0.8
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+{
+  "name": "matrix-summary",
+  "data": {
+    "cases": 3000,
+    "mismatches": 3,
+    "physical": 0,
+    "notOptimal": 0,
+    "elapsedMs": 678,
+    "peakBytes": 58179584
+  }
+}
+{
+  "name": "repeat",
+  "data": {
+    "input": {
+      "BarLength": 1500,
+      "CutWidth": 0,
+      "parts": [
+        {
+          "Id": "p0",
+          "Length": 600,
+          "Quantity": 4
+        },
+        {
+          "Id": "p1",
+          "Length": 1000,
+          "Quantity": 3
+        }
+      ]
+    },
+    "status": "Optimal",
+    "Method": "Exact branch-and-bound",
+    "BestFoundReason": 0,
+    "TotalBarCount": 5,
+    "TotalRemainder": 2100,
+    "TotalPartLength": 5400,
+    "TotalCutLoss": 0,
+    "UtilizationPercent": 72,
+    "GeneratedPatterns": 3,
+    "ExploredNodes": 15,
+    "ElapsedSeconds": 0.000125,
+    "bars": [
+      {
+        "Index": 1,
+        "Remainder": 500,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000,
+            "CopyIndex": 1
+          }
+        ]
+      },
+      {
+        "Index": 2,
+        "Remainder": 500,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000,
+            "CopyIndex": 2
+          }
+        ]
+      },
+      {
+        "Index": 3,
+        "Remainder": 500,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000,
+            "CopyIndex": 3
+          }
+        ]
+      },
+      {
+        "Index": 4,
+        "Remainder": 300,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 1
+          },
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 2
+          }
+        ]
+      },
+      {
+        "Index": 5,
+        "Remainder": 300,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 3
+          },
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 4
+          }
+        ]
+      }
+    ],
+    "patterns": [
+      {
+        "Multiplicity": 3,
+        "Remainder": 500,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000
+          }
+        ]
+      },
+      {
+        "Multiplicity": 2,
+        "Remainder": 300,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 600
+          },
+          {
+            "Id": "p0",
+            "Length": 600
+          }
+        ]
+      }
+    ]
+  }
+}
+{
+  "name": "repeat",
+  "data": {
+    "input": {
+      "BarLength": 1500,
+      "CutWidth": 0,
+      "parts": [
+        {
+          "Id": "p0",
+          "Length": 600,
+          "Quantity": 4
+        },
+        {
+          "Id": "p1",
+          "Length": 1000,
+          "Quantity": 3
+        }
+      ]
+    },
+    "status": "Optimal",
+    "Method": "Exact branch-and-bound",
+    "BestFoundReason": 0,
+    "TotalBarCount": 5,
+    "TotalRemainder": 2100,
+    "TotalPartLength": 5400,
+    "TotalCutLoss": 0,
+    "UtilizationPercent": 72,
+    "GeneratedPatterns": 3,
+    "ExploredNodes": 15,
+    "ElapsedSeconds": 0.000103,
+    "bars": [
+      {
+        "Index": 1,
+        "Remainder": 500,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000,
+            "CopyIndex": 1
+          }
+        ]
+      },
+      {
+        "Index": 2,
+        "Remainder": 500,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000,
+            "CopyIndex": 2
+          }
+        ]
+      },
+      {
+        "Index": 3,
+        "Remainder": 500,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000,
+            "CopyIndex": 3
+          }
+        ]
+      },
+      {
+        "Index": 4,
+        "Remainder": 300,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 1
+          },
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 2
+          }
+        ]
+      },
+      {
+        "Index": 5,
+        "Remainder": 300,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 3
+          },
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 4
+          }
+        ]
+      }
+    ],
+    "patterns": [
+      {
+        "Multiplicity": 3,
+        "Remainder": 500,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000
+          }
+        ]
+      },
+      {
+        "Multiplicity": 2,
+        "Remainder": 300,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 600
+          },
+          {
+            "Id": "p0",
+            "Length": 600
+          }
+        ]
+      }
+    ]
+  }
+}
+{
+  "name": "repeat",
+  "data": {
+    "input": {
+      "BarLength": 1500,
+      "CutWidth": 0,
+      "parts": [
+        {
+          "Id": "p0",
+          "Length": 600,
+          "Quantity": 4
+        },
+        {
+          "Id": "p1",
+          "Length": 1000,
+          "Quantity": 3
+        }
+      ]
+    },
+    "status": "Optimal",
+    "Method": "Exact branch-and-bound",
+    "BestFoundReason": 0,
+    "TotalBarCount": 5,
+    "TotalRemainder": 2100,
+    "TotalPartLength": 5400,
+    "TotalCutLoss": 0,
+    "UtilizationPercent": 72,
+    "GeneratedPatterns": 3,
+    "ExploredNodes": 15,
+    "ElapsedSeconds": 9.1E-05,
+    "bars": [
+      {
+        "Index": 1,
+        "Remainder": 500,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000,
+            "CopyIndex": 1
+          }
+        ]
+      },
+      {
+        "Index": 2,
+        "Remainder": 500,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000,
+            "CopyIndex": 2
+          }
+        ]
+      },
+      {
+        "Index": 3,
+        "Remainder": 500,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000,
+            "CopyIndex": 3
+          }
+        ]
+      },
+      {
+        "Index": 4,
+        "Remainder": 300,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 1
+          },
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 2
+          }
+        ]
+      },
+      {
+        "Index": 5,
+        "Remainder": 300,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 3
+          },
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 4
+          }
+        ]
+      }
+    ],
+    "patterns": [
+      {
+        "Multiplicity": 3,
+        "Remainder": 500,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000
+          }
+        ]
+      },
+      {
+        "Multiplicity": 2,
+        "Remainder": 300,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 600
+          },
+          {
+            "Id": "p0",
+            "Length": 600
+          }
+        ]
+      }
+    ]
+  }
+}
+{
+  "name": "pre-cancel",
+  "data": {
+    "type": "OperationCanceledException"
+  }
+}
+{
+  "name": "retry",
+  "data": {
+    "input": {
+      "BarLength": 1500,
+      "CutWidth": 0,
+      "parts": [
+        {
+          "Id": "p0",
+          "Length": 600,
+          "Quantity": 4
+        },
+        {
+          "Id": "p1",
+          "Length": 1000,
+          "Quantity": 3
+        }
+      ]
+    },
+    "status": "Optimal",
+    "Method": "Exact branch-and-bound",
+    "BestFoundReason": 0,
+    "TotalBarCount": 5,
+    "TotalRemainder": 2100,
+    "TotalPartLength": 5400,
+    "TotalCutLoss": 0,
+    "UtilizationPercent": 72,
+    "GeneratedPatterns": 3,
+    "ExploredNodes": 15,
+    "ElapsedSeconds": 9.49E-05,
+    "bars": [
+      {
+        "Index": 1,
+        "Remainder": 500,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000,
+            "CopyIndex": 1
+          }
+        ]
+      },
+      {
+        "Index": 2,
+        "Remainder": 500,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000,
+            "CopyIndex": 2
+          }
+        ]
+      },
+      {
+        "Index": 3,
+        "Remainder": 500,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000,
+            "CopyIndex": 3
+          }
+        ]
+      },
+      {
+        "Index": 4,
+        "Remainder": 300,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 1
+          },
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 2
+          }
+        ]
+      },
+      {
+        "Index": 5,
+        "Remainder": 300,
+        "CutLoss": 0,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 3
+          },
+          {
+            "Id": "p0",
+            "Length": 600,
+            "CopyIndex": 4
+          }
+        ]
+      }
+    ],
+    "patterns": [
+      {
+        "Multiplicity": 3,
+        "Remainder": 500,
+        "parts": [
+          {
+            "Id": "p1",
+            "Length": 1000
+          }
+        ]
+      },
+      {
+        "Multiplicity": 2,
+        "Remainder": 300,
+        "parts": [
+          {
+            "Id": "p0",
+            "Length": 600
+          },
+          {
+            "Id": "p0",
+            "Length": 600
+          }
+        ]
+      }
+    ]
+  }
+}

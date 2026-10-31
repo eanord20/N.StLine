@@ -1,0 +1,867 @@
+[
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "P",
+        "1000",
+        "0"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "P",
+        "1000",
+        "-7"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "P",
+        "1000",
+        "1.5"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1000,
+      "quantity": 2
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "P",
+        "1000",
+        "0.1"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "P",
+        "1000",
+        "2147483648"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "P",
+        "1000",
+        "1e100"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "P",
+        "1000",
+        "Infinity"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "P",
+        "1000",
+        "NaN"
+      ],
+      "ok": false,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "1250",
+        "abc"
+      ],
+      "ok": false,
+      "name": "1250",
+      "length": 0,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "1250",
+        "1.5"
+      ],
+      "ok": true,
+      "name": "",
+      "length": 1250,
+      "quantity": 2
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "P",
+        "1000",
+        "   "
+      ],
+      "ok": false,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "  P  ",
+        " 1250 ",
+        " 2 "
+      ],
+      "ok": true,
+      "name": "  P  ",
+      "length": 1250,
+      "quantity": 2
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "P",
+        "NaN",
+        "2"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": "NaN",
+      "quantity": 2
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "P",
+        "Infinity",
+        "2"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": "Infinity",
+      "quantity": 2
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "P",
+        "1,5",
+        "2"
+      ],
+      "ok": false,
+      "name": "P",
+      "length": 0,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [],
+      "ok": false,
+      "name": "",
+      "length": 0,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "en-US",
+      "cells": [
+        "   "
+      ],
+      "ok": false,
+      "name": "",
+      "length": 0,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "P",
+        "1000",
+        "0"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "P",
+        "1000",
+        "-7"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "P",
+        "1000",
+        "1.5"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1000,
+      "quantity": 2
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "P",
+        "1000",
+        "0.1"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "P",
+        "1000",
+        "2147483648"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "P",
+        "1000",
+        "1e100"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "P",
+        "1000",
+        "Infinity"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "P",
+        "1000",
+        "NaN"
+      ],
+      "ok": false,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "1250",
+        "abc"
+      ],
+      "ok": false,
+      "name": "1250",
+      "length": 0,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "1250",
+        "1.5"
+      ],
+      "ok": true,
+      "name": "",
+      "length": 1250,
+      "quantity": 2
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "P",
+        "1000",
+        "   "
+      ],
+      "ok": false,
+      "name": "P",
+      "length": 1000,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "  P  ",
+        " 1250 ",
+        " 2 "
+      ],
+      "ok": true,
+      "name": "  P  ",
+      "length": 1250,
+      "quantity": 2
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "P",
+        "NaN",
+        "2"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": "NaN",
+      "quantity": 2
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "P",
+        "Infinity",
+        "2"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": "Infinity",
+      "quantity": 2
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "P",
+        "1,5",
+        "2"
+      ],
+      "ok": true,
+      "name": "P",
+      "length": 1.5,
+      "quantity": 2
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [],
+      "ok": false,
+      "name": "",
+      "length": 0,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "parser",
+    "data": {
+      "culture": "uk-UA",
+      "cells": [
+        "   "
+      ],
+      "ok": false,
+      "name": "",
+      "length": 0,
+      "quantity": 1
+    }
+  },
+  {
+    "scenario": "engine",
+    "data": {
+      "id": "zero",
+      "exception": "ArgumentException",
+      "Message": "Part \u0027P0\u0027 length must be finite and greater than zero. (Parameter \u0027task\u0027)"
+    }
+  },
+  {
+    "scenario": "engine",
+    "data": {
+      "id": "negative",
+      "exception": "ArgumentException",
+      "Message": "Part \u0027P0\u0027 length must be finite and greater than zero. (Parameter \u0027task\u0027)"
+    }
+  },
+  {
+    "scenario": "engine",
+    "data": {
+      "id": "nan",
+      "exception": "ArgumentException",
+      "Message": "Part \u0027P0\u0027 length must be finite and greater than zero. (Parameter \u0027task\u0027)"
+    }
+  },
+  {
+    "scenario": "engine",
+    "data": {
+      "id": "inf",
+      "exception": "ArgumentException",
+      "Message": "Part \u0027P0\u0027 length must be finite and greater than zero. (Parameter \u0027task\u0027)"
+    }
+  },
+  {
+    "scenario": "engine",
+    "data": {
+      "id": "empty",
+      "exception": "ArgumentException",
+      "Message": "At least one part is required. (Parameter \u0027task\u0027)"
+    }
+  },
+  {
+    "scenario": "engine",
+    "data": {
+      "id": "qty0",
+      "exception": "ArgumentException",
+      "Message": "Part \u0027P0\u0027 quantity must be greater than zero. (Parameter \u0027task\u0027)"
+    }
+  },
+  {
+    "scenario": "engine",
+    "data": {
+      "id": "cutEqual",
+      "exception": "ArgumentException",
+      "Message": "Cut width must be finite, non-negative and less than bar length. (Parameter \u0027task\u0027)"
+    }
+  },
+  {
+    "scenario": "engine",
+    "data": {
+      "id": "impossible",
+      "exception": "ArgumentException",
+      "Message": "Part \u0027P0\u0027 does not fit into a single bar. (Parameter \u0027task\u0027)"
+    }
+  },
+  {
+    "scenario": "engine",
+    "data": {
+      "id": "exactFit",
+      "bar": 6000,
+      "cut": 3,
+      "input": [
+        {
+          "Length": 5997,
+          "Quantity": 1
+        }
+      ],
+      "status": "Optimal",
+      "TotalBarCount": 1,
+      "TotalRemainder": 0,
+      "TotalPartLength": 5997,
+      "TotalBarLength": 6000,
+      "UtilizationPercent": 99.95,
+      "bars": [
+        {
+          "count": 1,
+          "Remainder": 0,
+          "CutLoss": 3,
+          "actualUsed": 6000
+        }
+      ]
+    }
+  },
+  {
+    "scenario": "engine",
+    "data": {
+      "id": "tiny",
+      "bar": 1E-10,
+      "cut": 0,
+      "input": [
+        {
+          "Length": 6E-11,
+          "Quantity": 2
+        }
+      ],
+      "status": "Optimal",
+      "TotalBarCount": 1,
+      "TotalRemainder": -1.9999999999999996E-11,
+      "TotalPartLength": 1.2E-10,
+      "TotalBarLength": 1E-10,
+      "UtilizationPercent": 120,
+      "bars": [
+        {
+          "count": 2,
+          "Remainder": -1.9999999999999996E-11,
+          "CutLoss": 0,
+          "actualUsed": 1.2E-10
+        }
+      ]
+    }
+  },
+  {
+    "scenario": "engine",
+    "data": {
+      "id": "nearFit",
+      "bar": 1,
+      "cut": 0,
+      "input": [
+        {
+          "Length": 0.5000000002,
+          "Quantity": 2
+        }
+      ],
+      "status": "Optimal",
+      "TotalBarCount": 1,
+      "TotalRemainder": -4.000000330961484E-10,
+      "TotalPartLength": 1.0000000004,
+      "TotalBarLength": 1,
+      "UtilizationPercent": 100.00000004,
+      "bars": [
+        {
+          "count": 2,
+          "Remainder": -4.000000330961484E-10,
+          "CutLoss": 0,
+          "actualUsed": 1.0000000004
+        }
+      ]
+    }
+  },
+  {
+    "scenario": "engine",
+    "data": {
+      "id": "hugeFinite",
+      "bar": 1E+308,
+      "cut": 0,
+      "input": [
+        {
+          "Length": 6E+307,
+          "Quantity": 2
+        }
+      ],
+      "status": "Optimal",
+      "TotalBarCount": 2,
+      "TotalRemainder": 8.000000000000001E+307,
+      "TotalPartLength": 1.2E+308,
+      "TotalBarLength": "Infinity",
+      "UtilizationPercent": 0,
+      "bars": [
+        {
+          "count": 1,
+          "Remainder": 4.0000000000000004E+307,
+          "CutLoss": 0,
+          "actualUsed": 6E+307
+        },
+        {
+          "count": 1,
+          "Remainder": 4.0000000000000004E+307,
+          "CutLoss": 0,
+          "actualUsed": 6E+307
+        }
+      ]
+    }
+  },
+  {
+    "scenario": "engine",
+    "data": {
+      "id": "tinyRatio",
+      "bar": 6000,
+      "cut": 0,
+      "input": [
+        {
+          "Length": 1E-300,
+          "Quantity": 1
+        }
+      ],
+      "status": "BestFound",
+      "TotalBarCount": 1,
+      "TotalRemainder": 6000,
+      "TotalPartLength": 1E-300,
+      "TotalBarLength": 6000,
+      "UtilizationPercent": 1.6666666666666666E-302,
+      "bars": [
+        {
+          "count": 1,
+          "Remainder": 6000,
+          "CutLoss": 0,
+          "actualUsed": 1E-300
+        }
+      ]
+    }
+  },
+  {
+    "scenario": "oracleRejected",
+    "data": {
+      "n": 15,
+      "bar": 1.4,
+      "cut": 0.1,
+      "lengths": [
+        1.3,
+        1,
+        0.8,
+        0.5,
+        0.4,
+        0.3
+      ],
+      "oracle": 4,
+      "error": "System.ArgumentException: Part \u0027P0\u0027 does not fit into a single bar. (Parameter \u0027task\u0027)\r\n   at NStLine.Cutting.Services.CuttingEngine.Validate(CuttingTask task) in D:\\My_project\\N.StLine\\src\\NStLine.Cutting\\Services\\CuttingEngine.cs:line 143\r\n   at NStLine.Cutting.Services.CuttingEngine.Solve(CuttingTask task, CuttingOptions options, IProgress\u00601 progress, CancellationToken cancellationToken) in D:\\My_project\\N.StLine\\src\\NStLine.Cutting\\Services\\CuttingEngine.cs:line 13\r\n   at Program.Engine() in D:\\My_project\\N.StLine\\qa-focus-20261030\\agent3\\Program.cs:line 69"
+    }
+  },
+  {
+    "scenario": "oracleRejected",
+    "data": {
+      "n": 133,
+      "bar": 0.6,
+      "cut": 0.2,
+      "lengths": [
+        0.4,
+        0.3,
+        0.1
+      ],
+      "oracle": 3,
+      "error": "System.ArgumentException: Part \u0027P0\u0027 does not fit into a single bar. (Parameter \u0027task\u0027)\r\n   at NStLine.Cutting.Services.CuttingEngine.Validate(CuttingTask task) in D:\\My_project\\N.StLine\\src\\NStLine.Cutting\\Services\\CuttingEngine.cs:line 143\r\n   at NStLine.Cutting.Services.CuttingEngine.Solve(CuttingTask task, CuttingOptions options, IProgress\u00601 progress, CancellationToken cancellationToken) in D:\\My_project\\N.StLine\\src\\NStLine.Cutting\\Services\\CuttingEngine.cs:line 13\r\n   at Program.Engine() in D:\\My_project\\N.StLine\\qa-focus-20261030\\agent3\\Program.cs:line 69"
+    }
+  },
+  {
+    "scenario": "oracleRejected",
+    "data": {
+      "n": 134,
+      "bar": 1.4,
+      "cut": 0.1,
+      "lengths": [
+        1.3,
+        1.1,
+        0.9,
+        0.6,
+        0.6,
+        0.3,
+        0.1
+      ],
+      "oracle": 4,
+      "error": "System.ArgumentException: Part \u0027P0\u0027 does not fit into a single bar. (Parameter \u0027task\u0027)\r\n   at NStLine.Cutting.Services.CuttingEngine.Validate(CuttingTask task) in D:\\My_project\\N.StLine\\src\\NStLine.Cutting\\Services\\CuttingEngine.cs:line 143\r\n   at NStLine.Cutting.Services.CuttingEngine.Solve(CuttingTask task, CuttingOptions options, IProgress\u00601 progress, CancellationToken cancellationToken) in D:\\My_project\\N.StLine\\src\\NStLine.Cutting\\Services\\CuttingEngine.cs:line 13\r\n   at Program.Engine() in D:\\My_project\\N.StLine\\qa-focus-20261030\\agent3\\Program.cs:line 69"
+    }
+  },
+  {
+    "scenario": "oracle150",
+    "data": {
+      "seed": 3030,
+      "cases": 150,
+      "mismatches": []
+    }
+  },
+  {
+    "scenario": "preCancel",
+    "data": "OperationCanceledException"
+  },
+  {
+    "scenario": "vmValidation",
+    "data": {
+      "value": 0,
+      "Error": "Length must be greater than zero.",
+      "canCalculate": false
+    }
+  },
+  {
+    "scenario": "vmValidation",
+    "data": {
+      "value": -1,
+      "Error": "Length must be greater than zero.",
+      "canCalculate": false
+    }
+  },
+  {
+    "scenario": "vmValidation",
+    "data": {
+      "value": "NaN",
+      "Error": "Length must be greater than zero.",
+      "canCalculate": false
+    }
+  },
+  {
+    "scenario": "vmValidation",
+    "data": {
+      "value": "Infinity",
+      "Error": "Length must be greater than zero.",
+      "canCalculate": false
+    }
+  },
+  {
+    "scenario": "vmValidation",
+    "data": {
+      "value": 1E-300,
+      "Error": null,
+      "canCalculate": true
+    }
+  },
+  {
+    "scenario": "vmValidation",
+    "data": {
+      "value": 5997,
+      "Error": null,
+      "canCalculate": true
+    }
+  },
+  {
+    "scenario": "vmValidation",
+    "data": {
+      "value": 5998,
+      "Error": "Part does not fit into the bar.",
+      "canCalculate": false
+    }
+  },
+  {
+    "scenario": "quantityPlus",
+    "data": {
+      "input": 2147483647,
+      "actual": -2147483648,
+      "Error": "Quantity must be greater than zero."
+    }
+  },
+  {
+    "scenario": "afterEdit",
+    "data": {
+      "IsCurrentResultStale": true,
+      "copyEnabled": false
+    }
+  },
+  {
+    "scenario": "duringCalculation",
+    "data": {
+      "IsBusy": true,
+      "calculateEnabled": false,
+      "cancelEnabled": true
+    }
+  },
+  {
+    "scenario": "editDuringCalculation",
+    "data": {
+      "liveLength": 2000,
+      "snapshotLength": 1000,
+      "IsCurrentResultStale": false,
+      "copyEnabled": true,
+      "totalPartLength": 1000
+    }
+  },
+  {
+    "scenario": "cancelTwice",
+    "data": {
+      "hasResult": false,
+      "IsBusy": false,
+      "StatusText": "Calculation canceled."
+    }
+  }
+]

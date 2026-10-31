@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>QaHarness4</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NStLine.Core">
+      <HintPath>..\..\..\src\NStLine.Core\bin\Release\net8.0\NStLine.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="NStLine.Cutting">
+      <HintPath>..\..\..\src\NStLine.Cutting\bin\Release\net8.0\NStLine.Cutting.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

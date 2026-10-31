@@ -11,6 +11,27 @@ namespace NStLine.App.Tests;
 
 public sealed class MainViewModelCalculationTests
 {
+    [Theory]
+    [InlineData(1.4, 0.1, 1.3, true)]
+    [InlineData(0.6, 0.2, 0.4, true)]
+    [InlineData(0.3, 0.2, 0.1, true)]
+    [InlineData(1.4, 0.1, 1.3000000001, false)]
+    public void DecimalBoundary_ValidationMatchesEngineContract(double stock, double kerf, double length, bool expected)
+    {
+        var material = new LinearMaterial { Id = "decimal", Name = "Tube", StandardLength = stock, CutWidth = kerf };
+        var viewModel = new MainViewModel(new RecordingProjectCuttingEngine(),
+            new MemoryMaterialsLibraryService(material), null, new MemorySettingsService(new AppSettings()));
+        viewModel.AddMaterialCommand.Execute(material);
+        viewModel.AddRowCommand.Execute(null);
+        var row = Assert.Single(viewModel.Parts);
+
+        row.Length = length;
+        row.Quantity = 1;
+
+        Assert.Equal(expected, viewModel.CalculateCommand.CanExecute(null));
+        Assert.Equal(!expected, row.HasError);
+    }
+
     [Fact]
     public async Task CalculateAsyncStoresResultForMainWindowActions()
     {
@@ -100,7 +121,7 @@ public sealed class MainViewModelCalculationTests
     {
         var version = typeof(MainViewModel).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 
-        Assert.StartsWith("1.1.0", version);
+        Assert.StartsWith("1.2.0", version);
     }
 
     [Fact]
@@ -217,6 +238,68 @@ public sealed class MainViewModelCalculationTests
         Assert.Single(settings.Saves);
     }
 
+    [Fact]
+    public async Task ReportOptions_ArePersistedAndPassedAsSnapshot()
+    {
+        var outputFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        var (viewModel, reports, settings) = CreateViewModel();
+        try
+        {
+            var options = new ReportSettings { FileName = "Order", TimestampPosition = ReportTimestampPosition.None, ShowPartNames = false };
+            viewModel.ApplyReportSettings(options);
+            options.FileName = "Mutated";
+            viewModel.ReportOutputPath = outputFolder;
+            await viewModel.CalculateAsync();
+            await viewModel.GenerateReportAsync();
+
+            Assert.Equal("Order.docx", Path.GetFileName(reports.OutputPath));
+            Assert.False(reports.Options!.Settings.ShowPartNames);
+            Assert.Equal("Order", settings.Saved!.Report.FileName);
+            viewModel.ReportFileName = "Next";
+            Assert.Equal("Order", reports.Options.Settings.FileName);
+            Assert.Equal("Next", settings.Saved.Report.FileName);
+        }
+        finally
+        {
+            if (Directory.Exists(outputFolder))
+                Directory.Delete(outputFolder, true);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExistingReport_RequiresConfirmation(bool confirm)
+    {
+        var folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(folder);
+        var path = Path.Combine(folder, "Order.docx");
+        File.WriteAllText(path, "Original");
+        try
+        {
+            var material = new LinearMaterial { Id = "material", Name = "Tube", StandardLength = 6000, CutWidth = 3 };
+            var reports = new RecordingReportService();
+            string? confirmedPath = null;
+            var viewModel = new MainViewModel(new RecordingProjectCuttingEngine(), new MemoryMaterialsLibraryService(material),
+                null, new MemorySettingsService(new AppSettings { ReportOutputPath = folder }), reports,
+                confirmReportOverwrite: existing => { confirmedPath = existing; return confirm; });
+            viewModel.ApplyReportSettings(new ReportSettings { FileName = "Order", TimestampPosition = ReportTimestampPosition.None });
+            viewModel.AddMaterialCommand.Execute(material);
+            viewModel.AddRowCommand.Execute(null);
+            viewModel.Parts[0].Length = 1000;
+            await viewModel.CalculateAsync();
+            await viewModel.GenerateReportAsync();
+
+            Assert.Equal(path, confirmedPath);
+            Assert.Equal(confirm ? path : null, viewModel.LastReportPath);
+            Assert.Equal(confirm ? "" : "Original", File.ReadAllText(path));
+        }
+        finally
+        {
+            Directory.Delete(folder, true);
+        }
+    }
+
     private static (MainViewModel ViewModel, RecordingReportService Reports, MemorySettingsService Settings) CreateViewModel(string reportOutputPath = "")
     {
         var material = new LinearMaterial
@@ -303,10 +386,13 @@ public sealed class MainViewModelCalculationTests
     private sealed class RecordingReportService : IReportService
     {
         public string? OutputPath { get; private set; }
+        public ReportGenerationOptions? Options { get; private set; }
 
-        public void GenerateReport(string outputPath, ProjectCuttingTask task, ProjectCuttingResult result)
+        public void GenerateReport(string outputPath, ProjectCuttingTask task, ProjectCuttingResult result,
+            ReportGenerationOptions? options = null)
         {
             OutputPath = outputPath;
+            Options = options;
             File.WriteAllText(outputPath, string.Empty);
         }
     }

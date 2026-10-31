@@ -52,6 +52,7 @@ public sealed class PartRow : INotifyPropertyChanged
     }
 
     public bool HasError => !string.IsNullOrEmpty(_error);
+    public string? PasteSource { get; set; }
 
     public void SetError(string message)
     {

@@ -36,6 +36,38 @@ public sealed class LocalizationService : INotifyPropertyChanged
         }
     }
 
+    public static LocalizationService ForCulture(string culture) => new() { Culture = culture };
+
+    public string MenuCalculationSettings => this[nameof(MenuCalculationSettings)];
+    public string MenuReportSettings => this[nameof(MenuReportSettings)];
+    public string LabelReportFileName => this[nameof(LabelReportFileName)];
+    public string LabelFileNameSettings => this[nameof(LabelFileNameSettings)];
+    public string LabelReportContent => this[nameof(LabelReportContent)];
+    public string LabelTimestampPosition => this[nameof(LabelTimestampPosition)];
+    public string TimestampNone => this[nameof(TimestampNone)];
+    public string TimestampPrefix => this[nameof(TimestampPrefix)];
+    public string TimestampSuffix => this[nameof(TimestampSuffix)];
+    public string LabelIncludeDate => this[nameof(LabelIncludeDate)];
+    public string LabelIncludeTime => this[nameof(LabelIncludeTime)];
+    public string LabelReportHeading => this[nameof(LabelReportHeading)];
+    public string LabelShowSummary => this[nameof(LabelShowSummary)];
+    public string LabelPartSeparator => this[nameof(LabelPartSeparator)];
+    public string LabelSpaceSeparator => this[nameof(LabelSpaceSeparator)];
+    public string HintFixTableErrors => this[nameof(HintFixTableErrors)];
+    public string LabelIncludeMaterial => this[nameof(LabelIncludeMaterial)];
+    public string LabelShowPartNames => this[nameof(LabelShowPartNames)];
+    public string LabelPreview => this[nameof(LabelPreview)];
+    public string HintAutomaticFileName => this[nameof(HintAutomaticFileName)];
+    public string HintReportOnly => this[nameof(HintReportOnly)];
+    public string ButtonAddToProject => this[nameof(ButtonAddToProject)];
+    public string ButtonImport => this[nameof(ButtonImport)];
+    public string ButtonExport => this[nameof(ButtonExport)];
+    public string MaterialLibraryFilter => this[nameof(MaterialLibraryFilter)];
+    public string StatusMaterialsImported => this[nameof(StatusMaterialsImported)];
+    public string StatusMaterialsExported => this[nameof(StatusMaterialsExported)];
+    public string ErrorInvalidMaterialLibrary => this[nameof(ErrorInvalidMaterialLibrary)];
+    public string ErrorInvalidReportFileName => this[nameof(ErrorInvalidReportFileName)];
+    public string ConfirmReplaceReport => this[nameof(ConfirmReplaceReport)];
     public string WindowTitle => this["WindowTitle"];
     public string MenuFile => this["MenuFile"];
     public string MenuEdit => this["MenuEdit"];
@@ -149,6 +181,9 @@ public sealed class LocalizationService : INotifyPropertyChanged
     public string ErrorResultActionFailed => this["ErrorResultActionFailed"];
     public string StatusProjectSaved => this["StatusProjectSaved"];
     public string StatusProjectLoaded => this["StatusProjectLoaded"];
+    public string StatusPartsPasted => this["StatusPartsPasted"];
+    public string ErrorFileRecovery => this["ErrorFileRecovery"];
+    public string ErrorFileAction => this["ErrorFileAction"];
     public string ErrorMaterialNotAssigned => this["ErrorMaterialNotAssigned"];
     public string ErrorLengthPositive => this["ErrorLengthPositive"];
     public string ErrorQuantityPositive => this["ErrorQuantityPositive"];
@@ -158,6 +193,36 @@ public sealed class LocalizationService : INotifyPropertyChanged
     {
         _resources["en"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
+            ["MenuCalculationSettings"] = "Calculation settings…",
+            ["MenuReportSettings"] = "Report settings…",
+            ["LabelReportFileName"] = "File name",
+            ["LabelFileNameSettings"] = "File name",
+            ["LabelReportContent"] = "Content",
+            ["LabelTimestampPosition"] = "Date/time position",
+            ["TimestampNone"] = "Do not add",
+            ["TimestampPrefix"] = "Before name",
+            ["TimestampSuffix"] = "After name",
+            ["LabelIncludeDate"] = "Date",
+            ["LabelIncludeTime"] = "Time",
+            ["LabelReportHeading"] = "Report title (empty = default)",
+            ["LabelShowSummary"] = "Show summary",
+            ["LabelPartSeparator"] = "Separator between parts",
+            ["LabelSpaceSeparator"] = "Space",
+            ["HintFixTableErrors"] = "The table contains rows with errors. Correct or remove them to start the calculation.",
+            ["LabelIncludeMaterial"] = "Include material and bar length in cutting schemes",
+            ["LabelShowPartNames"] = "Show part names in cutting schemes",
+            ["LabelPreview"] = "Preview",
+            ["HintAutomaticFileName"] = "Empty = automatic file name. The .docx extension is added automatically.",
+            ["HintReportOnly"] = "Applies to DOCX only. Calculation, screen results and clipboard remain unchanged.",
+            ["ButtonAddToProject"] = "+ Add",
+            ["ButtonImport"] = "Import…",
+            ["ButtonExport"] = "Export…",
+            ["MaterialLibraryFilter"] = "Material library (*.json)|*.json",
+            ["StatusMaterialsImported"] = "Added: {0}; skipped: {1}. Click OK to save the library.",
+            ["StatusMaterialsExported"] = "Library exported: {0}",
+            ["ErrorInvalidMaterialLibrary"] = "Invalid material library. Each material needs a name, a positive finite length and a non-negative finite cut width.",
+            ["ErrorInvalidReportFileName"] = "Enter a valid Windows file name without a folder path.",
+            ["ConfirmReplaceReport"] = "The report already exists. Replace it?\n{0}",
             ["WindowTitle"] = "N.StLine",
             ["MenuFile"] = "File",
             ["MenuEdit"] = "Edit",
@@ -271,6 +336,9 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["ErrorResultActionFailed"] = "Result action failed: {0}",
             ["StatusProjectSaved"] = "Project saved: {0}",
             ["StatusProjectLoaded"] = "Project loaded: {0}",
+            ["StatusPartsPasted"] = "Added {0} rows; {1} require correction. Correct or delete marked rows before calculating or saving.",
+            ["ErrorFileRecovery"] = "Could not read data: {0}. The original file is protected from automatic saving. Repair or restore a copy, then restart; for materials, reopen Materials after repair.",
+            ["ErrorFileAction"] = "Could not open {0}: {1}. The current task has not been replaced.",
             ["ErrorMaterialNotAssigned"] = "Material is not assigned.",
             ["ErrorLengthPositive"] = "Length must be greater than zero.",
             ["ErrorQuantityPositive"] = "Quantity must be greater than zero.",
@@ -279,6 +347,36 @@ public sealed class LocalizationService : INotifyPropertyChanged
 
         _resources["ua"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
+            ["MenuCalculationSettings"] = "Параметри розрахунку…",
+            ["MenuReportSettings"] = "Налаштування звіту…",
+            ["LabelReportFileName"] = "Ім’я файлу",
+            ["LabelFileNameSettings"] = "Ім’я файлу",
+            ["LabelReportContent"] = "Вміст",
+            ["LabelTimestampPosition"] = "Розташування дати/часу",
+            ["TimestampNone"] = "Не додавати",
+            ["TimestampPrefix"] = "Перед іменем",
+            ["TimestampSuffix"] = "Після імені",
+            ["LabelIncludeDate"] = "Дата",
+            ["LabelIncludeTime"] = "Час",
+            ["LabelReportHeading"] = "Заголовок звіту (порожній = стандартний)",
+            ["LabelShowSummary"] = "Показувати підсумок",
+            ["LabelPartSeparator"] = "Роздільник між деталями",
+            ["LabelSpaceSeparator"] = "Пробіл",
+            ["HintFixTableErrors"] = "У таблиці є рядки з помилками. Виправте або видаліть їх, щоб запустити розрахунок.",
+            ["LabelIncludeMaterial"] = "Додавати матеріал і довжину заготовки до схем розкрою",
+            ["LabelShowPartNames"] = "Показувати назви деталей у схемах розкрою",
+            ["LabelPreview"] = "Попередній перегляд",
+            ["HintAutomaticFileName"] = "Порожнє поле = автоматичне ім’я файлу. Розширення .docx додається автоматично.",
+            ["HintReportOnly"] = "Лише для DOCX. Розрахунок, результати на екрані та буфер обміну не змінюються.",
+            ["ButtonAddToProject"] = "+ Додати",
+            ["ButtonImport"] = "Імпорт…",
+            ["ButtonExport"] = "Експорт…",
+            ["MaterialLibraryFilter"] = "Бібліотека матеріалів (*.json)|*.json",
+            ["StatusMaterialsImported"] = "Додано: {0}; пропущено: {1}. Натисніть OK, щоб зберегти бібліотеку.",
+            ["StatusMaterialsExported"] = "Бібліотеку експортовано: {0}",
+            ["ErrorInvalidMaterialLibrary"] = "Некоректна бібліотека матеріалів. Кожен матеріал повинен мати назву, додатну скінченну довжину та невід’ємну скінченну ширину різу.",
+            ["ErrorInvalidReportFileName"] = "Вкажіть коректне ім’я файлу Windows без шляху до папки.",
+            ["ConfirmReplaceReport"] = "Звіт уже існує. Замінити його?\n{0}",
             ["WindowTitle"] = "N.StLine",
             ["MenuFile"] = "Файл",
             ["MenuEdit"] = "Правка",
@@ -392,6 +490,9 @@ public sealed class LocalizationService : INotifyPropertyChanged
             ["ErrorResultActionFailed"] = "Не вдалося виконати дію з результатом: {0}",
             ["StatusProjectSaved"] = "Проект збережено: {0}",
             ["StatusProjectLoaded"] = "Проект завантажено: {0}",
+            ["StatusPartsPasted"] = "Додано рядків: {0}; потребують виправлення: {1}. Виправте або видаліть позначені рядки перед розрахунком чи збереженням.",
+            ["ErrorFileRecovery"] = "Не вдалося прочитати дані: {0}. Початковий файл захищено від автоматичного збереження. Виправте або відновіть копію та перезапустіть програму; для матеріалів після виправлення знову відкрийте Матеріали.",
+            ["ErrorFileAction"] = "Не вдалося відкрити {0}: {1}. Поточне завдання не замінено.",
             ["ErrorMaterialNotAssigned"] = "Матеріал не призначено.",
             ["ErrorLengthPositive"] = "Довжина має бути більшою за нуль.",
             ["ErrorQuantityPositive"] = "Кількість має бути більшою за нуль.",

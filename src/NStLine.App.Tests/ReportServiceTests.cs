@@ -103,6 +103,62 @@ public sealed class ReportServiceTests
         }
     }
 
+    [Theory]
+    [InlineData(NStLine.App.Models.ReportPartSeparator.Plus, " + ")]
+    [InlineData(NStLine.App.Models.ReportPartSeparator.Pipe, " | ")]
+    [InlineData(NStLine.App.Models.ReportPartSeparator.Dash, " - ")]
+    public void GenerateReport_AppliesOptionsOnlyToSchemeParagraphs(NStLine.App.Models.ReportPartSeparator separator, string delimiter)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.docx");
+        try
+        {
+            var material = MaterialResult("first", "Швеллер 12П", "Part 3", 600);
+            var secondPart = new PlacedPart { Source = new PartRequirement { Name = "Part 2", Length = 500, Quantity = 1 } };
+            var pattern = new CuttingPattern
+            {
+                Multiplicity = 4, Remainder = 30,
+                Parts = Enumerable.Repeat(material.Result.Patterns[0].Parts[0], 9).Append(secondPart).ToList()
+            };
+            var result = new ProjectCuttingResult
+            {
+                Materials = [new MaterialCuttingResult
+                {
+                    Material = material.Material, Task = material.Task,
+                    Result = new CuttingResult { Status = CalculationStatus.BestFound, Patterns = [pattern] }
+                }]
+            };
+            var settings = new NStLine.App.Models.ReportSettings
+            {
+                Title = "Order", TitleIncludeDate = true, TitleIncludeTime = true,
+                ShowSummary = false, IncludeMaterial = true, ShowPartNames = false, PartSeparator = separator
+            };
+            new ReportService().GenerateReport(path, new ProjectCuttingTask(), result,
+                new NStLine.App.Models.ReportGenerationOptions(settings, new DateTime(2026, 10, 30, 14, 30, 25), "ua"));
+
+            using var document = DocX.Load(path);
+            Assert.Equal("Order — 30.10.2026 14:30:25", document.Paragraphs[0].Text);
+            Assert.DoesNotContain(document.Paragraphs, p => p.Text == "Підсумок");
+            Assert.Contains(document.Paragraphs, p => p.Text.Contains("Найкращий знайдений варіант"));
+            var scheme = Assert.Single(document.Paragraphs.Where(p => p.Text.Contains("×4")));
+            Assert.Equal($"Швеллер 12П - 6000 мм ×4 | 600 мм × 9{delimiter}500 мм | залишок 30", scheme.Text);
+            Assert.Contains("Part 3", document.Tables[0].Rows[1].Cells[0].Paragraphs[0].Text);
+
+            using var archive = ZipFile.OpenRead(path);
+            using var stream = archive.GetEntry("word/document.xml")!.Open();
+            var xml = XDocument.Load(stream);
+            XNamespace word = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+            var quantity = Assert.Single(xml.Descendants(word + "r").Where(r => string.Concat(r.Descendants(word + "t").Select(t => t.Value)) == "×4"));
+            var bold = quantity.Element(word + "rPr")?.Element(word + "b");
+            Assert.True(bold == null || bold.Attribute(word + "val")?.Value is "0" or "false" or "off");
+            var details = Assert.Single(xml.Descendants(word + "r").Where(r => string.Concat(r.Descendants(word + "t").Select(t => t.Value)).Contains("600 мм × 9")));
+            Assert.True(details.Element(word + "rPr")?.Element(word + "b") == null || details.Element(word + "rPr")?.Element(word + "b")?.Attribute(word + "val")?.Value == "0");
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
     private static MaterialCuttingResult MaterialResult(string id, string materialName, string partName, double length)
     {
         var material = new LinearMaterial { Id = id, Name = materialName, StandardLength = 6000, CutWidth = 3 };

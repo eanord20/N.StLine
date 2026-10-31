@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Round2Harness</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NStLine.Core">
+      <HintPath>..\..\..\src\NStLine.App\bin\Release\net8.0-windows\NStLine.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="NStLine.Cutting">
+      <HintPath>..\..\..\src\NStLine.App\bin\Release\net8.0-windows\NStLine.Cutting.dll</HintPath>
+    </Reference>
+    <Reference Include="NStLine.App">
+      <HintPath>..\..\..\src\NStLine.App\bin\Release\net8.0-windows\NStLine.App.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

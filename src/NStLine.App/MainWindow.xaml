@@ -5,7 +5,7 @@
         xmlns:views="clr-namespace:NStLine.App.Views"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         Title="{Binding WindowTitle}"
-        Icon="pack://application:,,,/Resources/logo.png"
+        Icon="pack://application:,,,/NStLine.App;component/Resources/logo.png"
         Height="720" Width="1280"
         WindowState="Maximized"
         Background="{DynamicResource WindowBackgroundBrush}"
@@ -13,7 +13,7 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/MainWindowStyles.xaml" />
+                <ResourceDictionary Source="/NStLine.App;component/MainWindowStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <Style x:Key="PartRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
@@ -55,6 +55,9 @@
             </MenuItem>
             <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuEdit}">
                 <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonUndo}" Command="{Binding UndoCommand}" InputGestureText="Ctrl+Z" />
+                <Separator />
+                <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuCalculationSettings}" Command="{Binding OpenCalculationSettingsCommand}" />
+                <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuReportSettings}" Command="{Binding OpenReportSettingsCommand}" />
             </MenuItem>
             <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuLanguage}">
                 <MenuItem Header="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=MenuEnglish}" Command="{Binding SetLanguageCommand}" CommandParameter="en" />
@@ -71,56 +74,94 @@
 
         <Border Grid.Row="2" Style="{StaticResource WorkspaceCardStyle}">
             <Grid>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                    <Button Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding OpenMaterialsCommand}" Margin="0,0,6,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <WrapPanel Grid.Column="0">
+                    <Button Style="{StaticResource CompactToolbarButtonStyle}" Command="{Binding OpenMaterialsCommand}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Layers" Width="16" Height="16" Margin="0,0,5,0" />
                             <TextBlock Text="{Binding ButtonMaterials}" />
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding PasteFromClipboardCommand}" Margin="0,0,6,0">
+                    <Button x:Name="AddMaterialButton" Style="{StaticResource CompactToolbarButtonStyle}" IsEnabled="{Binding HasAvailableLibraryMaterials}"
+                            Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonAddToProject}"
+                            ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TooltipAddMaterial}" Click="AddMaterial_Click">
+                        <Button.ContextMenu>
+                            <ContextMenu ItemsSource="{Binding AvailableLibraryMaterials}">
+                                <ContextMenu.ItemContainerStyle>
+                                    <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                        <Setter Property="Header" Value="{Binding Name}" />
+                                        <Setter Property="Command" Value="{Binding PlacementTarget.DataContext.AddMaterialCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                        <Setter Property="CommandParameter" Value="{Binding}" />
+                                    </Style>
+                                </ContextMenu.ItemContainerStyle>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    <Button Style="{StaticResource CompactToolbarButtonStyle}" Command="{Binding PasteFromClipboardCommand}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="ContentPaste" Width="16" Height="16" Margin="0,0,5,0" />
                             <TextBlock Text="{Binding ButtonPaste}" />
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding ClearAllCommand}">
+                    <Button Style="{StaticResource CompactToolbarButtonStyle}" Command="{Binding ClearAllCommand}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="DeleteSweepOutline" Width="16" Height="16" Margin="0,0,5,0" />
                             <TextBlock Text="{Binding ButtonClear}" />
                         </StackPanel>
                     </Button>
-                    <TextBlock Margin="14,0,6,0" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelExactProfile}" />
-                    <ComboBox Width="130" SelectedValuePath="Tag" SelectedValue="{Binding SelectedExactProfileKey, Mode=TwoWay}" VerticalContentAlignment="Center"
-                              ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TooltipExactProfile}"
-                              Style="{StaticResource AppMaterialComboBoxStyle}">
-                        <ComboBoxItem Tag="fast" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ProfileFast}" />
-                        <ComboBoxItem Tag="balanced" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ProfileBalanced}" />
-                        <ComboBoxItem Tag="custom" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ProfileCustom}" />
-                    </ComboBox>
-                    <TextBlock Margin="10,0,6,0" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelExactTimeLimit}" />
-                    <TextBox Width="68" VerticalContentAlignment="Center" Style="{StaticResource ExactLimitTextBoxStyle}"
-                             ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TooltipExactTimeLimit}"
-                             Text="{Binding ExactTimeLimitSeconds, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
-                    <TextBlock Margin="10,0,6,0" VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelExactPatternLimit}" />
-                    <TextBox Width="92" VerticalContentAlignment="Center" Style="{StaticResource ExactLimitTextBoxStyle}"
-                             ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TooltipExactPatternLimit}"
-                             Text="{Binding ExactMaxPatternCount, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding CancelCalculationCommand}" Margin="0,0,6,0">
+
+                </WrapPanel>
+                <WrapPanel Grid.Column="2" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource CompactToolbarButtonStyle}" Command="{Binding CopyResultsCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ContentCopy" Width="{StaticResource ToolbarIconSize}" Height="{StaticResource ToolbarIconSize}" Margin="{StaticResource ToolbarIconSpacing}" />
+                            <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonCopyResults}" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource CompactToolbarButtonStyle}" Command="{Binding GenerateReportCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FileDocumentOutline" Width="{StaticResource ToolbarIconSize}" Height="{StaticResource ToolbarIconSize}" Margin="{StaticResource ToolbarIconSpacing}" />
+                            <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonGenerateReport}" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource CompactToolbarButtonStyle}" Command="{Binding CancelCalculationCommand}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Stop" Width="16" Height="16" Margin="0,0,5,0" />
                             <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonCancelCalculation}" />
                         </StackPanel>
                     </Button>
-                    <Button Style="{StaticResource PrimaryActionButtonStyle}" Command="{Binding CalculateCommand}">
+                    <Button Width="Auto" Margin="{StaticResource ActionSpacing}" Command="{Binding CalculateCommand}" ToolTipService.ShowOnDisabled="True">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryActionButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasInputErrors}" Value="True">
+                                        <Setter Property="ToolTip" Value="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=HintFixTableErrors}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Play" Width="18" Height="18" Margin="0,0,5,0" />
                             <TextBlock Text="{Binding ButtonCalculate}" />
                         </StackPanel>
                     </Button>
-                </StackPanel>
+                </WrapPanel>
+                <Grid x:Name="ReportOutputFields" Grid.Column="1" Margin="{StaticResource ToolbarFieldsSpacing}" VerticalAlignment="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Height="{StaticResource ToolbarControlHeight}" RenderTransform="{StaticResource ToolbarReportInputOffset}" Text="{Binding ReportOutputPath, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" ToolTip="{Binding ReportOutputPath}" />
+                    <Button Grid.Column="1" Style="{StaticResource CompactToolbarButtonStyle}" Command="{Binding BrowseReportOutputPathCommand}" Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonBrowse}" />
+                    <TextBlock Grid.Column="2" VerticalAlignment="Center" Margin="{StaticResource InlineSpacing}" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelReportFileName}" />
+                    <TextBox Grid.Column="3" Height="{StaticResource ToolbarControlHeight}" RenderTransform="{StaticResource ToolbarReportInputOffset}" Text="{Binding ReportFileName, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=HintAutomaticFileName}" />
+                </Grid>
             </Grid>
         </Border>
 
@@ -173,19 +214,7 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <materialDesign:PopupBox Grid.Column="1" VerticalAlignment="Top" ToolTip="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=TooltipAddMaterial}" StaysOpen="False">
-                            <materialDesign:PopupBox.ToggleContent>
-                                <materialDesign:PackIcon Kind="Plus" Width="18" Height="18" />
-                            </materialDesign:PopupBox.ToggleContent>
-                            <ItemsControl ItemsSource="{Binding AvailableLibraryMaterials}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Button Content="{Binding Name}" Command="{Binding DataContext.AddMaterialCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                CommandParameter="{Binding}" Style="{StaticResource AppButtonStyle}" Width="Auto" MinWidth="160" HorizontalContentAlignment="Left" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </materialDesign:PopupBox>
+
                     </Grid>
 
                     <ToolBarTray Grid.Row="4" Background="Transparent">
@@ -345,8 +374,6 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="8" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="12" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
@@ -355,37 +382,11 @@
                             <TextBlock Text="{Binding CurrentResultStatusText}" FontSize="16" FontWeight="SemiBold" />
                             <TextBlock Text="{Binding CurrentResultStatusDetails}" Opacity="0.75" TextWrapping="Wrap" />
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding CopyResultsCommand}" Margin="0,0,6,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="ContentCopy" Width="16" Height="16" Margin="0,0,5,0" />
-                                    <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonCopyResults}" />
-                                </StackPanel>
-                            </Button>
-                            <Button Style="{StaticResource AppToolbarButtonStyle}" Command="{Binding GenerateReportCommand}">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="FileDocumentOutline" Width="16" Height="16" Margin="0,0,5,0" />
-                                    <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonGenerateReport}" />
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
+
                     </Grid>
+
 
                     <Grid Grid.Row="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="8" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="8" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock VerticalAlignment="Center" Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=LabelReportOutputPath}" />
-                        <TextBox Grid.Column="2" Text="{Binding ReportOutputPath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" VerticalContentAlignment="Center" />
-                        <Button Grid.Column="4" Style="{StaticResource AppButtonStyle}" Command="{Binding BrowseReportOutputPathCommand}"
-                                Content="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=ButtonBrowse}" />
-                    </Grid>
-
-                    <Grid Grid.Row="4">
                         <TextBlock Text="{Binding Source={x:Static loc:LocalizationService.Instance}, Path=EmptyNoResult}" IsHitTestVisible="False">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyStateTextStyle}">

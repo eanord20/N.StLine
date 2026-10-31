@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>PasteHarness</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="D:\My_project\N.StLine\src\NStLine.App\bin\Release\net8.0-windows\NStLine.App.dll" />
+    <Reference Include="D:\My_project\N.StLine\src\NStLine.App\bin\Release\net8.0-windows\NStLine.Core.dll" />
+    <Reference Include="D:\My_project\N.StLine\src\NStLine.App\bin\Release\net8.0-windows\NStLine.Cutting.dll" />
+  </ItemGroup>
+</Project>

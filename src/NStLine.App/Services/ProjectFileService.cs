@@ -19,10 +19,18 @@ public sealed class ProjectFileService : IProjectFileService
     {
         var json = File.ReadAllText(path);
         var data = JsonSerializer.Deserialize<ProjectData>(json, _jsonOptions)
-            ?? throw new InvalidOperationException("Project file is empty or invalid.");
+            ?? throw new InvalidDataException("Project file is empty or invalid.");
 
+        Validate(data);
         MigrateLegacyProject(data);
         return data;
+    }
+
+    public static void Validate(ProjectData data)
+    {
+        if (data.Materials == null || data.Parts == null ||
+            data.Materials.Any(material => material == null) || data.Parts.Any(part => part == null))
+            throw new InvalidDataException("Invalid project structure.");
     }
 
     private static void MigrateLegacyProject(ProjectData data)

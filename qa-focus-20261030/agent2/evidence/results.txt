@@ -1,0 +1,232 @@
+[PASS] T01 spec ref1: 1000x3 / 6000 / k3
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=1 rem=2991 loss=9 util=50% status=Optimal reason=None method=Exact branch-and-bound t=0,003s pats=3 oracleBars=1 patterns=3 
+  details:  
+[PASS] T02 spec ref2: 1200x5 / 6000 / k3 -> 2 bars
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=2 rem=5985 loss=15 util=50% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=4 oracleBars=2 patterns=4 
+  details:  
+[PASS] T03 spec ref3: 2400x2+1800x2+1200 / 6000 / k3
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=2 rem=2385 loss=15 util=80% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=10 oracleBars=2 patterns=10 
+  details:  
+[PASS] T04 spec ref4: 600x4+1000x3 / 1500 / k0 -> 5
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=5 rem=2100 loss=0 util=72% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=3 oracleBars=5 patterns=3 
+  details:  
+[PASS] T05 spec ref5: 3000x2 / 6000 / k10 -> 2
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=2 rem=5980 loss=20 util=50% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=1 oracleBars=2 patterns=1 
+  details:  
+[PASS] T06 spec ref7: 5997 / 6000 / k3 -> rem 0
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=1 rem=0 loss=3 util=99,95% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=1 oracleBars=1 patterns=1 
+  details:  
+[PASS] T07 decimal mm: 1250.5x2+749x2 / 3000 / k2.5
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=2 rem=1991 loss=10 util=66,65% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=6 oracleBars=2 patterns=6 
+  details:  
+[PASS] T08 spec ref9: 1250x10+850x20+2400x6 / 6000 / k3
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=8 rem=3992 loss=108 util=91,46% status=Optimal reason=None method=Exact branch-and-bound t=0,014s pats=35 oracleBars=8 patterns=35 
+  details:  
+[PASS] T09 dup types same length: 500x2 + 500x3 / 3000 / k0
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=1 rem=500 loss=0 util=83,33% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=11 oracleBars=1 patterns=11 
+  details:  
+[PASS] T10 hetero mixed: 8 types / 12000 / k4
+  expected: valid plan; oracle=n/a; status=BestFound
+  actual:   bars=5 rem=5372 loss=128 util=90,83% status=BestFound reason=TimeLimitReached method=First Fit Decreasing t=30,006s pats=7767  
+  details:  
+[PASS] R01 random#1 bar6000 k2
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=3 rem=4077,5 loss=30 util=77,18% status=Optimal reason=None method=Exact branch-and-bound t=0,013s pats=255 oracleBars=3 patterns=255 input=923,5x3;780,5x2;940x1;781x5;1179x4
+  details:  
+[PASS] R02 random#2 bar6000 k0
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=4 rem=1031 loss=0 util=95,7% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=26 oracleBars=4 patterns=26 input=536,5x6;2043,5x4;2894x4
+  details:  
+[PASS] R03 random#3 bar6000 k5
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=5 rem=4219,5 loss=85 util=85,65% status=Optimal reason=None method=Exact branch-and-bound t=0,015s pats=145 oracleBars=5 patterns=145 input=400,5x4;1310x3;2451,5x4;697,5x3;2755x3
+  details:  
+[PASS] R04 random#4 bar6000 k0
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=2 rem=38,5 loss=0 util=99,68% status=Optimal reason=None method=Exact branch-and-bound t=0,001s pats=18 oracleBars=2 patterns=18 input=2037,5x2;1968,5x2;1316,5x3
+  details:  
+[PASS] R05 random#5 bar6000 k3
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=4 rem=1271,5 loss=33 util=94,56% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=10 oracleBars=4 patterns=10 input=2526x4;1615,5x6;2898,5x1
+  details:  
+[PASS] R06 random#6 bar6000 k3
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=2 rem=597,5 loss=27 util=94,8% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=25 oracleBars=2 patterns=25 input=2496,5x1;682x5;1823x3
+  details:  
+[PASS] R07 random#7 bar6000 k3
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=7 rem=3174,5 loss=60 util=92,3% status=Optimal reason=None method=Exact branch-and-bound t=0,002s pats=47 oracleBars=7 patterns=47 input=404,5x5;1723,5x4;2866x5;2586,5x6
+  details:  
+[PASS] R08 random#8 bar6000 k2
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=3 rem=659 loss=26 util=96,19% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=38 oracleBars=3 patterns=38 input=1693,5x6;1204x3;885,5x4
+  details:  
+[PASS] R09 random#9 bar6000 k2
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=6 rem=5349,5 loss=46 util=85,01% status=Optimal reason=None method=Exact branch-and-bound t=0,816s pats=225 oracleBars=6 patterns=225 input=2874,5x3;542x4;1484x5;396x5;1735,5x6
+  details:  
+[PASS] R10 random#10 bar6000 k5
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=3 rem=1258 loss=60 util=92,68% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=32 oracleBars=3 patterns=32 input=1598,5x2;1805,5x6;663x4
+  details:  
+[PASS] R11 random#11 bar6000 k5
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=5 rem=4552,5 loss=100 util=84,49% status=Optimal reason=None method=Exact branch-and-bound t=0,013s pats=99 oracleBars=5 patterns=99 input=675,5x6;2183x4;905,5x5;1607x5
+  details:  
+[PASS] R12 random#12 bar6000 k2
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=5 rem=6712,5 loss=26 util=77,54% status=Optimal reason=None method=Exact branch-and-bound t=0,001s pats=31 oracleBars=5 patterns=31 input=2531x4;1081,5x4;1517,5x1;1823,5x4
+  details:  
+[PASS] R13 random#13 bar6000 k2
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=4 rem=2540 loss=30 util=89,29% status=Optimal reason=None method=Exact branch-and-bound t=0,004s pats=72 oracleBars=4 patterns=72 input=1766,5x1;1113,5x6;1638x3;2289x2;1163,5x3
+  details:  
+[PASS] R14 random#14 bar6000 k2
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=7 rem=3563 loss=38 util=91,43% status=Optimal reason=None method=Exact branch-and-bound t=0,001s pats=27 oracleBars=7 patterns=27 input=2114x5;2526,5x6;2447,5x3;1065,5x5
+  details:  
+[PASS] R15 random#15 bar6000 k5
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=5 rem=5088,5 loss=65 util=82,82% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=23 oracleBars=5 patterns=23 input=2571x2;407,5x5;2944,5x6
+  details:  
+[PASS] R16 random#16 bar6000 k0
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=4 rem=6243,5 loss=0 util=73,99% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=33 oracleBars=4 patterns=33 input=1379x4;1003,5x1;422x1;2163x5
+  details:  
+[PASS] R17 random#17 bar6000 k2
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=4 rem=1407 loss=28 util=94,02% status=Optimal reason=None method=Exact branch-and-bound t=0,002s pats=97 oracleBars=4 patterns=97 input=322x2;1449x4;307,5x2;2775,5x3;2394,5x3
+  details:  
+[PASS] R18 random#18 bar6000 k5
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=2 rem=4172,5 loss=35 util=64,94% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=25 oracleBars=2 patterns=25 input=968x4;1429x2;1062,5x1
+  details:  
+[PASS] R19 random#19 bar6000 k2
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=9 rem=4270 loss=52 util=92% status=Optimal reason=None method=Exact branch-and-bound t=0,046s pats=53 oracleBars=9 patterns=53 input=1362,5x6;1619,5x6;2922x5;1264x4;2424x5
+  details:  
+[PASS] R20 random#20 bar6000 k0
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=2 rem=1327,5 loss=0 util=88,94% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=14 oracleBars=2 patterns=14 input=1084x3;2150,5x1;2635x2
+  details:  
+[PASS] L01 pattern limit forced (maxPat=5)
+  expected: valid plan; oracle=n/a; status=BestFound
+  actual:   bars=8 rem=3992 loss=108 util=91,46% status=BestFound reason=PatternLimitReached method=First Fit Decreasing t=0s pats=6  expect BestFound/PatternLimitReached
+  details:  
+[PASS] L02 time limit forced (0.1ms)
+  expected: valid plan; oracle=n/a; status=BestFound
+  actual:   bars=8 rem=3992 loss=108 util=91,46% status=BestFound reason=TimeLimitReached method=First Fit Decreasing t=0s pats=35  expect BestFound/TimeLimitReached
+  details:  
+[PASS] L03 heavy task deep-ish limits
+  expected: valid plan; oracle=n/a; status=BestFound
+  actual:   bars=20 rem=12050 loss=700 util=94,69% status=BestFound reason=TimeLimitReached method=First Fit Decreasing t=15,007s pats=2185  
+  details:  
+[PASS] D01 determinism: identical input x2
+  expected: identical bar layouts
+  actual:   eq=True bars=8/8
+  details:  
+[PASS] V01 part longer than bar (7000>6000)
+  expected: ArgumentException: too long
+  actual:   Part 'X' does not fit into a single bar. (Parameter 'task')
+  details:  
+[PASS] V02 part==bar with k>0 (6000,k3)
+  expected: ArgumentException: L+K>L
+  actual:   Part 'X' does not fit into a single bar. (Parameter 'task')
+  details:  
+[PASS] V03 qty=0
+  expected: ArgumentException: qty>0
+  actual:   Part 'X' quantity must be greater than zero. (Parameter 'task')
+  details:  
+[PASS] V04 negative length
+  expected: ArgumentException: len>0
+  actual:   Part 'X' length must be finite and greater than zero. (Parameter 'task')
+  details:  
+[PASS] V05 cutWidth>=bar
+  expected: ArgumentException: K<L
+  actual:   Cut width must be finite, non-negative and less than bar length. (Parameter 'task')
+  details:  
+[PASS] V06 empty parts
+  expected: ArgumentException: >=1 part
+  actual:   At least one part is required. (Parameter 'task')
+  details:  
+[PASS] V07 NaN bar length
+  expected: ArgumentException: finite
+  actual:   Bar length must be finite and greater than zero. (Parameter 'task')
+  details:  
+[PASS] V08 part==bar with k0 -> 1 bar rem 0
+  expected: valid plan; oracle=checked; status=Optimal
+  actual:   bars=1 rem=0 loss=0 util=100% status=Optimal reason=None method=Exact branch-and-bound t=0s pats=1 oracleBars=1 patterns=1 
+  details:  
+[PASS] M01 project: 2 materials diff lengths + empty material
+  expected: m1=2 bars (6000,k3), m2=oracle bars (12000,k5), m3 skipped
+  actual:   m1 bars=2 status=Optimal; m2 bars=2 status=Optimal; projectStatus=Optimal oracle m1=2 m2=2
+  details:  
+[PASS] M02 project: unknown MaterialId
+  expected: ArgumentException: unknown material
+  actual:   Part material 'nope' is missing. (Parameter 'task')
+  details:  
+[PASS] M03 project: zero materials
+  expected: ArgumentException: >=1 material
+  actual:   At least one material is required. (Parameter 'task')
+  details:  
+[PASS] S01 materials library save/load roundtrip (temp path)
+  expected: 1 material
+  actual:   1
+  details:  
+[PASS] S02 import invalid file rejected
+  expected: InvalidDataException
+  actual:   thrown
+  details:  
+[PASS] S03 import dedupe/id-conflict
+  expected: added=1 skipped=2 new id
+  actual:   added=1 skipped=2 count=2 newId=d40a4afd6d8046c98024ad24a124881d
+  details:  
+[PASS] P01 clipboard paste parser
+  expected: all parse combos correct
+  actual:   3col:True/Det1/1250/10 2col-num:True/1250/10 2col-name:True/Det2/850,5/1 1col:True/1000 garbage:False qty0:True/1 qtyNeg:True/1 
+  details:  NOTE qty0->1 qtyNeg->1 (silent clamp to 1)
+[PASS] U01 VM: add project material sets active
+  expected: ActiveMaterialId=m1
+  actual:   active=m1
+  details:  
+[PASS] U02 VM: calculate produces result
+  expected: result, 2 bars
+  actual:   bars=2 status=Optimal stale=False
+  details:  
+[PASS] U03 VM: edit marks stale, blocks copy
+  expected: stale=true, copy disabled
+  actual:   stale=True copyBefore=True copyAfter=False
+  details:  
+[PASS] U04 VM: recalc clears stale
+  expected: stale=false, copy enabled
+  actual:   stale=False bars=3
+  details:  
+[PASS] U05 VM: too-long part blocks calculate
+  expected: CanCalculate=false, row error
+  actual:   canCalc=False err=Part does not fit into the bar.
+  details:  
+[PASS] U05b VM: stale blocks report cmd, recalc restores
+  expected: report cmd disabled while stale, enabled after recalc
+  actual:   canReportStale=False canReportNow=True stale=False
+  details:  
+[PASS] U06 VM: DOCX report generated in QA folder
+  expected: valid docx file
+  actual:   path=D:\My_project\N.StLine\qa-focus-20261030\agent2\data\reports\N.StLine_Report_2026-10-30_132201.docx exists=True zip=True
+  details:  
+[FAIL] U07 VM: 'deep' profile (spec) selectable
+  expected: profile key 'deep' accepted (90s/1M per spec)
+  actual:   key=balanced t=30 pat=100000
+  details:  spec MVP 2.1 lists Fast/Balanced/Deep/Custom
+[PASS] U08 VM: settings saved to injected path
+  expected: settings.json with exact limits
+  actual:   saved
+  details:  

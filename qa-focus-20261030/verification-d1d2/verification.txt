@@ -1,0 +1,20 @@
+Этап первичных исправлений D1/D2. Исходные отчеты и доказательства раундов1/2 оставлены без изменения.
+
+RED до изменения production: Cutting decimal-tests14 FAIL/3 PASS; App DecimalBoundary3 FAIL/1 PASS. Подтверждены исходные count3vs2, DecimalBoundary ArgumentException, отрицательные остатки FFD и overflow floor->int.
+
+Реализация: LengthScale в Core строит общий точный BigInteger-масштаб из invariant double.ToString("R"). Внешние double/JSON не изменены. Общий контракт используется в ValidateRow, engine Validate, FFD, генераторе паттернов и нижней границе точного поиска. Не добавлен epsilon и не разрешен перерасход. ToleranceMm сохранен для совместимости, не расширяет вместимость. Числа с исходными вычислительными residue не округляются до желаемых литералов.
+
+Финальная проверка координатора:
+dotnet build src/NStLine.slnx -c Release ->0 warnings,0 errors
+dotnet test src/NStLine.slnx -c Release --no-build ->Core12/Cutting47/App85,144 PASS,0 FAIL
+git diff --check ->exit0
+
+Независимые harness пересобраны с прямыми ссылками на исправленные Release DLL; выполнены foreground координатором с cwd этого каталога, чтобы не перезаписать исходные evidence.
+Auditor Round2Harness: integer2000 mismatch0/reject0; decimal3000 mismatch0/reject0; boundary13/13 accepted; literal-decimal2302.3,23006.9,5005/kerf200.2 ->2 бара (как oracle). Полный вывод: results-confirmed.jsonl.
+Agent6 Harness: decimal3000 mismatch0/physical0/notOptimal0; elapsed590ms, peakBytes58474496 в этом прогоне; decimal-ffd-trap ->2 бара/Optimal/remainder0/util100%. Полный вывод: suite-evidence.txt.
+Таким образом в двух независимых десятичных матрицах6000 задач без расхождений. Это не гарантия корректности всех возможных входов и не desktop-проверка.
+
+Побочно на тех же численных операциях устранены проверенные D3 (микробар теперь2/60%/остаток8e-11) и D13 (6000/1e-6x2 теперьOptimal,2patterns).
+Conversion-probe auditor x1001 все еще actual3 против округленного oracle2: входы содержат17-значные residue. В точном R-контракте700.6999999999999x2+900.9=2302.2999999999998, что больше bar2302.2999999999997; два бара физически невозможны. Это не тот же ввод, что literal2302.3/700.7/900.9 (PASS). Предположение округленного oracle в probe не является регрессионным требованием; исходный harness и его expected2 не переписывались.
+
+НЕ ИСПРАВЛЯЛИСЬ на этом этапе: D4/D5 вставка; D8 stale; D6/D7 поврежденные файлы; D9/D10/D11/D12 и спорные требования. В suite-evidence сохраняются NRE null, Infinity/NaN экстремальных агрегатов и двоичный шум Utilization100.00000000000003 для0.1x3 — не выданы за исправленные. Полное приложение пока не переводится в READY. Commit/push/installer не выполнялись.

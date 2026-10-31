@@ -1,0 +1,15 @@
+Round 1 independent agent3; no other QA reports read.
+Baseline read: qa-focus-20261030/baseline.md.
+Candidate baseline: 1.1.0+uncommitted, HEAD 9408582acbfa5256d0257c77c7a8e399c92546f9.
+Commands executed:
+- dotnet build Harness.csproj -c Release --nologo (initial: harness compilation CS0103 File/Path; added using System.IO only in harness)
+- dotnet build Harness.csproj -c Release --nologo (PASS 0 warnings, 0 errors)
+- dotnet build Harness.csproj -c Release --nologo (PASS 0 warnings, 0 errors after child watchdog addition; 1.51 seconds)
+Execution denied by tool permissions (background agent cannot obtain approval):
+- PowerShell Start-Process dotnet ... watchdog invocation: denied, not executed.
+- dotnet bin/Release/net8.0-windows/Harness.dll: denied, not executed.
+NO runtime behavior has been observed. No EXE/App.OnStartup was run. No clipboard API invoked.
+Parent action required: approve/run `dotnet bin/Release/net8.0-windows/Harness.dll` from qa-focus-20261030/agent3.
+Harness parent launches child, watches <=30 seconds / sampled working set <=400 MiB, kills process tree if exceeded; gate waits <=5 seconds; inputs maximum 7 copies for oracle and 2 copies for numeric extremes. No billion-copy solve.
+Expected outputs after successful execution: evidence.json, evidence-stdout.txt, evidence-stderr.txt, watchdog.txt.
+Only agent3 files edited; no product code, shared bin/obj, user settings or policies changed.

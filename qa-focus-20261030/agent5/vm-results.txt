@@ -1,0 +1,22 @@
+ActiveMaterialId=m1
+after AddRow: len=0 qty=1 err=Length must be greater than zero.
+set Length=1000: err=<null>
+set Length=0: err=Length must be greater than zero.
+set Length=-5: err=Length must be greater than zero.
+set Length=5998 (5998+3>6000): err=Part does not fit into the bar.
+set Length=5997 (5997+3==6000): err=<null>
+set Quantity=0: err=Quantity must be greater than zero.
+set Quantity=-3: err=Quantity must be greater than zero.
+set Quantity=5: err=<null>
+ReplaceQuantityFromKeyboard(0): qty=0 err=Quantity must be greater than zero.
+ReplaceQuantityFromKeyboard(7): qty=7 err=<null>
+grid-double '1250,5' @en-US -> FAIL ArgumentException
+grid-double '1250.5' @en-US -> 1250.5
+grid-double '1 250' @en-US -> FAIL ArgumentException
+grid-double 'abc' @en-US -> FAIL ArgumentException
+grid-double '1e3' @en-US -> 1000
+grid-double '1250,5' @ru-RU -> 1250,5
+grid-double '1250.5' @ru-RU -> FAIL ArgumentException
+grid-double '1 250' @ru-RU -> FAIL ArgumentException
+grid-double 'abc' @ru-RU -> FAIL ArgumentException
+grid-double '1e3' @ru-RU -> 1000

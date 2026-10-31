@@ -47,6 +47,7 @@ Business logic must never depend on WPF. The calculation engine is independent a
 - Quantity is never altered by the algorithm.
 - A bar cannot contain a part longer than the bar length.
 - Cut model: N placed parts → N cuts → cut loss = N × CutWidth.
+- LengthScale converts invariant round-trip decimal representations of finite double dimensions to a common BigInteger scale. Use it for physical fit checks, pattern generation and length lower bounds; never use a fixed epsilon to permit stock overflow.
 - Optimality order: minimize bar count; then minimize total remainder.
 
 ---

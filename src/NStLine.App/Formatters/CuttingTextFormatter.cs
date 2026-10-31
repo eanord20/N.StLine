@@ -21,7 +21,9 @@ public static class CuttingTextFormatter
     public static string FormatGroupedParts(
         IEnumerable<PlacedPart> parts,
         IFormatProvider? formatProvider = null,
-        string? lengthUnit = null)
+        string? lengthUnit = null,
+        string separator = " + ",
+        bool showNames = true)
     {
         var groups = parts
             .Select((part, index) => new { Part = part, Index = index })
@@ -29,12 +31,15 @@ public static class CuttingTextFormatter
             .OrderBy(group => group.Min(x => x.Index))
             .Select(group =>
             {
-                var text = FormatPart(group.Key.Name, group.Key.Length, formatProvider, lengthUnit);
+                var text = showNames
+                    ? FormatPart(group.Key.Name, group.Key.Length, formatProvider, lengthUnit)
+                    : group.Key.Length.ToString("0.##", formatProvider ?? CultureInfo.CurrentCulture) +
+                      (string.IsNullOrWhiteSpace(lengthUnit) ? string.Empty : $" {lengthUnit}");
                 var count = group.Count();
                 return count > 1 ? $"{text} × {count}" : text;
             });
 
-        return string.Join(" + ", groups);
+        return string.Join(separator, groups);
     }
 
     public static string FormatProjectResult(

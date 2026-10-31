@@ -31,9 +31,7 @@ public static class ThemeService
 
         var appTheme = new ResourceDictionary
         {
-            Source = new Uri(theme == AppTheme.Dark
-                ? "/AppThemeDark.xaml"
-                : "/AppTheme.xaml", UriKind.Relative)
+            Source = new Uri($"/{typeof(App).Assembly.GetName().Name};component/{(theme == AppTheme.Dark ? "AppThemeDark.xaml" : "AppTheme.xaml")}", UriKind.Relative)
         };
         dictionaries.Add(appTheme);
     }

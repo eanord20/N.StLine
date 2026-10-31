@@ -50,7 +50,8 @@ public sealed class PartRowsUndoHistory
             MaterialId = row.MaterialId,
             Name = row.Name,
             Length = row.Length,
-            Quantity = row.Quantity
+            Quantity = row.Quantity,
+            PasteSource = row.PasteSource
         };
 }
 

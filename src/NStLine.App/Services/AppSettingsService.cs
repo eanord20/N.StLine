@@ -20,12 +20,16 @@ public sealed class AppSettingsService : IAppSettingsService
         if (!File.Exists(_filePath))
             return new AppSettings();
 
-        var json = File.ReadAllText(_filePath);
-        if (string.IsNullOrWhiteSpace(json))
-            return new AppSettings();
-
-        var settings = JsonSerializer.Deserialize<AppSettings>(json, _jsonOptions);
-        return settings ?? new AppSettings();
+        try
+        {
+            var json = File.ReadAllText(_filePath);
+            return JsonSerializer.Deserialize<AppSettings>(json, _jsonOptions)
+                ?? throw new InvalidDataException(_filePath);
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidDataException($"{_filePath}: {ex.Message}", ex);
+        }
     }
 
     public void Save(AppSettings settings)

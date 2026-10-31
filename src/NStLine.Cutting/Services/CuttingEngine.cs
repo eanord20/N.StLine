@@ -10,12 +10,26 @@ public sealed class CuttingEngine : ICuttingEngine
 
     public CuttingResult Solve(CuttingTask task, CuttingOptions options, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
+        var result = SolveCore(task, options, cancellationToken);
+        EnsureFiniteTotals(result.TotalBarLength, result.TotalPartLength, result.TotalCutLoss,
+            result.TotalRemainder, result.UtilizationPercent);
+        return result;
+    }
+
+    internal static void EnsureFiniteTotals(params double[] totals)
+    {
+        if (totals.Any(value => !double.IsFinite(value)))
+            throw new ArgumentException("Dimensions exceed the supported aggregate range.");
+    }
+
+    private static CuttingResult SolveCore(CuttingTask task, CuttingOptions options, CancellationToken cancellationToken)
+    {
         Validate(task);
         cancellationToken.ThrowIfCancellationRequested();
 
         // The heuristic runs first: its result seeds the exact solver with an
         // incumbent bound, which prunes most of the branch-and-bound tree.
-        var heuristicResult = FirstFitDecreasingSolver.Solve(task, options);
+        var heuristicResult = FirstFitDecreasingSolver.Solve(task, options, cancellationToken);
 
         var exactSolver = new ExactPatternSolver(task, options, cancellationToken);
         exactSolver.SetIncumbent(heuristicResult.TotalBarCount, heuristicResult.TotalRemainder);
@@ -131,7 +145,7 @@ public sealed class CuttingEngine : ICuttingEngine
         foreach (var part in task.Parts)
         {
             if (part == null)
-                continue;
+                throw new ArgumentException("Parts must not contain null entries.", nameof(task));
 
             if (!double.IsFinite(part.Length) || part.Length <= 0)
                 throw new ArgumentException($"Part '{part.Name}' length must be finite and greater than zero.", nameof(task));
@@ -139,7 +153,7 @@ public sealed class CuttingEngine : ICuttingEngine
             if (part.Quantity <= 0)
                 throw new ArgumentException($"Part '{part.Name}' quantity must be greater than zero.", nameof(task));
 
-            if (part.Length + task.CutWidth > task.BarLength)
+            if (!LengthScale.Fits(part.Length, task.CutWidth, task.BarLength))
                 throw new ArgumentException($"Part '{part.Name}' does not fit into a single bar.", nameof(task));
         }
     }

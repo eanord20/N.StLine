@@ -1,0 +1,35 @@
+Исходный кандидат: HEAD9408582acbfa5256d0257c77c7a8e399c92546f9 + незакоммиченные изменения, App version1.1.0.
+Release build выполнен координатором до раунда1: 0 warnings, 0 errors.
+
+Бинарные SHA256, снятые координатором:
+NStLine.App.exe: 57B3915DC83959F0F9EA3842BE417D84792489E14B845F77C019588796941068
+NStLine.App.dll: 3720D589854C2F4B08A1099BD0095FA55E45FF954AA7EA7A81C9F90EADE3EB3E
+NStLine.Cutting.dll: 1A34B0DFC78F005AE0FA4E3AAD020DE45C55BBA900C3B66140BD81225B20A4CD
+Старый installer1.1.0 (не тестировался и не устанавливался): A2926C63DBCDC26D5063268DBEA5462D318B24180C1DCA22901E6A98245535B9
+
+Раунд1 agent3: foreground запуск исходной обертки завершился ошибкой watchdog Process has exited; child успел сохранить evidence.json. Это дефект harness, не продукта.
+После исправления только собственного harness агентом3 координатор выполнил:
+  cwd qa-focus-20261030/agent3
+  dotnet bin/Release/net8.0-windows/Harness.dll
+  exit0 elapsed0.6477385s sampled peakWorkingSet62181376 reasoncompleted
+  Полный результат: evidence-rerun.json; исходное evidence.json сохранено.
+
+Agent6 foreground исполнения координатором:
+  cwd qa-focus-20261030/agent6
+  dotnet bin/Release/net8.0-windows/Harness.dll -> exit0, suite-evidence.txt
+  dotnet bin/Release/net8.0-windows/Harness.dll cancel -> exit0, cancel-evidence.txt
+
+Повтор существующих тестов отдельными командами --no-build --no-restore, отдельные TRX:
+Core.Tests: 2 PASS, 0 FAIL (7 ms)
+Cutting.Tests: 31 PASS, 0 FAIL (46 ms)
+App.Tests: 81 PASS, 0 FAIL (2 s)
+Всего114 PASS. final-tests/core.trx, cutting.trx, app.trx.
+Не смешивать PASS существующих тестов с результатами новых независимых сценариев.
+
+Промежуточная проверка неизменности после раунда1:
+git ls-files -co --exclude-standard -- . ':(exclude)qa-focus-20261030/**' ':(exclude)nul' | git hash-object --stdin-paths | git hash-object --stdin
+7190b82223413a1952b4c0cf112c981831c4936a — совпадает с baseline.
+Во время тестирования дополнительно появился новый пустой файл nul в корне (вероятно побочный эффект shell-редиректа одного harness, конкретный автор не установлен). Его git hash-object=e69de29bb2d1d6434b8b29ae775ad8c2e48c5391, то есть пустое содержимое. Он не является исходником, не удалялся; исключен явно, не скрыт. Изменений исходников продукта не выявлено.
+
+Контекстная независимость: шесть отдельных subagent-контекстов без обмена отчетами в раунде1, аудитор подключен только после шести отчетов. Общие модель/машина/файловая система и тайминг нагрузки не независимы.
+Ограничение выполнения: фоновые агенты сталкивались с запретом direct executable, некоторые выполняли через MSBuild targets / test runner. Это должно быть раскрыто как ограничение управления разрешениями, а не повторяться. Координатор использовал обычный foreground exec для agent3/6; дальнейшие прогоны только разрешенными командами, без обходов.

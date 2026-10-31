@@ -1,0 +1,31 @@
+QA6, 2026-10-30. Commands and verbatim observed outcomes.
+
+workdir D:\My_project\N.StLine
+> git log -8 --oneline
+9408582 fix(ci): correct .NET SDK version and Inno Setup package version
+460bf27 feat: exact solver hardening, UI polish, license and docs update
+defb2ec feat(cutting): harden exact search controls and diagnostics
+026650b merge: prepare installer and GitHub publishing
+1d592f4 chore(assets): track application logo
+d678783 chore(release): prepare installer and GitHub publishing
+2ca0e28 fix(app): solver stack overflow crash, readable columns, fuller About
+6f5fee1 feat(ui): excel-like enter navigation, app icon, help menu
+
+> dotnet test src/NStLine.Cutting.Tests/NStLine.Cutting.Tests.csproj -c Release --no-build --no-restore --logger "trx;LogFileName=qa6-cutting.trx" --results-directory qa-focus-20261030/agent6
+Passed 31, failed 0, skipped 0, duration 48 ms, net8.0.
+Original machine-readable evidence: qa6-cutting.trx.
+
+workdir D:\My_project\N.StLine\qa-focus-20261030\agent6
+> dotnet build Harness.csproj -c Release
+Build succeeded. 0 warnings, 0 errors. 1.50 s. Only harness rebuilt, direct Core/Cutting DLL refs.
+> dotnet build Harness.csproj -c Release --no-restore
+Build succeeded. 0 warnings, 0 errors. 0.99 s.
+
+> dotnet "bin/Release/net8.0-windows/Harness.dll" > suite-evidence.txt
+Permission denied for this tool: this agent is running in the background, where tools that would require approval are automatically denied.
+> dotnet bin/Release/net8.0-windows/Harness.dll
+Permission to run the command `dotnet bin/Release/net8.0-windows/Harness.dll` was denied because this agent is running in the background, where tools that would require approval are automatically denied.
+> dotnet run --project Harness.csproj -c Release --no-build --no-restore
+Permission to run the command `dotnet run --project Harness.csproj -c Release --no-build --no-restore` was denied because this agent is running in the background, where tools that would require approval are automatically denied.
+
+No custom harness runtime evidence exists yet. Do not interpret build success as scenario success. Ask foreground coordinator to execute the harness with appropriate approval. Harness now writes suite-evidence.txt or cancel-evidence.txt itself to its working directory and has a 45-second watchdog. No App.OnStartup or WPF AppData access is used.

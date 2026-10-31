@@ -38,6 +38,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly IAppSettingsService _appSettingsService;
     private readonly IProjectCuttingEngine _cuttingEngine;
     private readonly IReportService? _reportService;
+    private readonly Func<string, bool> _confirmReportOverwrite;
+    private ReportSettings _reportSettings = new();
+    private long _inputRevision;
+    private bool _settingsLoadFailed;
+    private bool _libraryLoadFailed;
     private readonly PartRowsUndoHistory _undoHistory = new(MaxUndoDepth);
     private readonly HashSet<PartRow> _trackedRows = new();
 
@@ -64,13 +69,17 @@ public sealed class MainViewModel : INotifyPropertyChanged
         IMaterialsLibraryService? materialsLibraryService = null,
         IProjectFileService? projectFileService = null,
         IAppSettingsService? appSettingsService = null,
-        IReportService? reportService = null)
+        IReportService? reportService = null,
+        Func<string, bool>? confirmReportOverwrite = null)
     {
         _cuttingEngine = cuttingEngine;
         _materialsLibraryService = materialsLibraryService ?? new MaterialsLibraryService();
         _projectFileService = projectFileService;
         _appSettingsService = appSettingsService ?? new AppSettingsService();
         _reportService = reportService;
+        _confirmReportOverwrite = confirmReportOverwrite ?? (path => MessageBox.Show(
+            string.Format(_localization.ConfirmReplaceReport, path), _localization.ReportTitle,
+            MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.Yes);
         PartsView = (ListCollectionView)CollectionViewSource.GetDefaultView(Parts);
         PartsView.GroupDescriptions!.Add(new PropertyGroupDescription(nameof(PartRow.MaterialId)));
         PartsView.CustomSort = new PartRowMaterialComparer(GetMaterialOrder);
@@ -98,6 +107,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         CopyResultsCommand = new RelayCommand(_ => CopyResults(), _ => CanUseCurrentResult());
         GenerateReportCommand = new RelayCommand(async _ => await GenerateReportAsync(), _ => CanGenerateReport());
         BrowseReportOutputPathCommand = new RelayCommand(_ => BrowseReportOutputPath());
+        OpenReportSettingsCommand = new RelayCommand(_ => OpenReportSettings());
+        OpenCalculationSettingsCommand = new RelayCommand(_ => OpenCalculationSettings(), _ => !IsBusy);
         OpenLastReportCommand = new RelayCommand(_ => OpenLastReport(), _ => CanOpenLastReport());
         ClearAllCommand = new RelayCommand(_ => ClearAll(), _ => Parts.Count > 0 || ProjectMaterials.Count > 0);
         SaveProjectCommand = new RelayCommand(_ => SaveProject(), _ => CanSaveProject());
@@ -220,6 +231,27 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    public string ReportFileName
+    {
+        get => _reportSettings.FileName;
+        set
+        {
+            if (_reportSettings.FileName == value)
+                return;
+            _reportSettings.FileName = value ?? string.Empty;
+            OnPropertyChanged();
+            SaveSettings();
+        }
+    }
+
+    public void ApplyReportSettings(ReportSettings settings)
+    {
+        ReportFileNameFormatter.Format(settings, DateTime.Now);
+        _reportSettings = settings with { };
+        OnPropertyChanged(nameof(ReportFileName));
+        SaveSettings();
+    }
+
     public string? LastReportPath
     {
         get => _lastReportPath;
@@ -320,6 +352,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ICommand CopyResultsCommand { get; }
     public ICommand GenerateReportCommand { get; }
     public ICommand BrowseReportOutputPathCommand { get; }
+    public ICommand OpenReportSettingsCommand { get; }
+    public ICommand OpenCalculationSettingsCommand { get; }
     public ICommand OpenLastReportCommand { get; }
     public ICommand ClearAllCommand { get; }
     public ICommand SaveProjectCommand { get; }
@@ -341,13 +375,24 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public string LabelCutWidth => _localization.LabelCutWidth;
     public string StatusOptimal => _localization.StatusOptimal;
     public string StatusBestFound => _localization.StatusBestFound;
+    public bool HasAvailableLibraryMaterials => AvailableLibraryMaterials.Any();
+    public bool HasInputErrors => Parts.Any(row => row.HasError);
 
     private void LoadLibrary()
     {
-        var materials = _materialsLibraryService.LoadAll();
-        LibraryMaterials.Clear();
-        foreach (var material in materials)
-            LibraryMaterials.Add(material);
+        try
+        {
+            var materials = _materialsLibraryService.LoadAll();
+            LibraryMaterials.Clear();
+            foreach (var material in materials)
+                LibraryMaterials.Add(material);
+            _libraryLoadFailed = false;
+        }
+        catch (Exception ex) when (IsFileError(ex))
+        {
+            _libraryLoadFailed = true;
+            StatusText = $"{StatusText}\n{string.Format(_localization.ErrorFileRecovery, ex.Message)}".Trim();
+        }
     }
 
     private void AddMaterial(object? parameter)
@@ -413,9 +458,20 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void LoadSettings()
     {
-        var settings = _appSettingsService.Load();
+        AppSettings settings;
+        try
+        {
+            settings = _appSettingsService.Load();
+        }
+        catch (Exception ex) when (IsFileError(ex))
+        {
+            _settingsLoadFailed = true;
+            StatusText = $"{StatusText}\n{string.Format(_localization.ErrorFileRecovery, ex.Message)}".Trim();
+            settings = new AppSettings();
+        }
         _localization.Culture = settings.Culture;
         _reportOutputPath = settings.ReportOutputPath ?? string.Empty;
+        _reportSettings = (settings.Report ?? new ReportSettings()) with { };
         _exactTimeLimitSeconds = settings.ExactTimeLimitSeconds > 0
             ? settings.ExactTimeLimitSeconds
             : AppConstants.DefaultCuttingOptions.TimeLimitSeconds;
@@ -438,11 +494,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void SaveSettings()
     {
+        if (_settingsLoadFailed)
+            return;
         _appSettingsService.Save(new AppSettings
         {
             Culture = _localization.Culture,
             Theme = _currentTheme.ToString(),
             ReportOutputPath = ReportOutputPath,
+            Report = _reportSettings with { },
             ExactTimeLimitSeconds = ExactTimeLimitSeconds,
             ExactMaxPatternCount = ExactMaxPatternCount,
             ExactProfileKey = SelectedExactProfileKey
@@ -526,7 +585,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void IncreaseQuantity(object? parameter)
     {
-        if (parameter is not PartRow row || !Parts.Contains(row))
+        if (parameter is not PartRow row || !Parts.Contains(row) || row.Quantity == int.MaxValue)
             return;
 
         if (_pendingEditSnapshot == null)
@@ -570,6 +629,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
 
         OnPropertyChanged(nameof(HasParts));
+        OnPropertyChanged(nameof(HasInputErrors));
         MarkCurrentResultStale();
         CommandManager.InvalidateRequerySuggested();
     }
@@ -588,6 +648,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void OnPartRowPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (sender is PartRow && e.PropertyName == nameof(PartRow.HasError))
+        {
+            OnPropertyChanged(nameof(HasInputErrors));
+            return;
+        }
         if (sender is not PartRow row || e.PropertyName is not (
                 nameof(PartRow.Name) or
                 nameof(PartRow.Length) or
@@ -606,52 +671,49 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         try
         {
-            if (ActiveMaterialId == null || !Clipboard.ContainsText())
-                return;
-
-            var text = Clipboard.GetText();
-            if (string.IsNullOrWhiteSpace(text))
-                return;
-
-            var snapshot = CaptureSnapshot();
-            var originalCount = Parts.Count;
-            var lines = text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var line in lines)
-            {
-                var cells = line.Split('\t').Select(c => c.Trim()).ToArray();
-                if (!PartPasteParser.TryParse(cells, out var name, out var length, out var quantity))
-                    continue;
-
-                var rowNumber = Parts.Count + 1;
-                var row = new PartRow
-                {
-                    MaterialId = ActiveMaterialId,
-                    Name = string.IsNullOrWhiteSpace(name) ? $"Part {rowNumber}" : name,
-                    Length = length,
-                    Quantity = Math.Max(1, quantity),
-                    RowNumber = rowNumber
-                };
-
-                ValidateRow(row);
-                Parts.Add(row);
-            }
-
-            if (Parts.Count > originalCount)
-            {
-                _undoHistory.Push(snapshot.Rows, snapshot.ActiveMaterialId);
-                RaiseUndoCanExecuteChanged();
-            }
-            else
-            {
-                MessageBox.Show(_localization.MessagePasteFailed, _localization.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-
-            RenumberRows();
+            if (ActiveMaterialId != null && Clipboard.ContainsText())
+                PasteText(Clipboard.GetText());
         }
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message, _localization.ErrorTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
+    }
+
+    public void PasteText(string text)
+    {
+        if (ActiveMaterialId == null || string.IsNullOrWhiteSpace(text))
+            return;
+        var snapshot = CaptureSnapshot();
+        var originalCount = Parts.Count;
+        var invalidCount = 0;
+        foreach (var line in text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+            var cells = line.Split('\t').Select(cell => cell.Trim()).ToArray();
+            var parsed = PartPasteParser.TryParse(cells, out var name, out var length, out var quantity);
+            var rowNumber = Parts.Count + 1;
+            var row = new PartRow
+            {
+                MaterialId = ActiveMaterialId,
+                Name = string.IsNullOrWhiteSpace(name) ? $"Part {rowNumber}" : name,
+                Length = length,
+                Quantity = quantity,
+                RowNumber = rowNumber,
+                PasteSource = parsed ? null : line
+            };
+            ValidateRow(row);
+            if (row.HasError)
+                invalidCount++;
+            Parts.Add(row);
+        }
+        if (Parts.Count == originalCount)
+            return;
+        _undoHistory.Push(snapshot.Rows, snapshot.ActiveMaterialId);
+        RaiseUndoCanExecuteChanged();
+        RenumberRows();
+        StatusText = string.Format(_localization.StatusPartsPasted, Parts.Count - originalCount, invalidCount);
     }
 
     private void ValidateParts()
@@ -672,17 +734,19 @@ public sealed class MainViewModel : INotifyPropertyChanged
             row.SetError(_localization.ErrorLengthPositive);
         else if (row.Quantity <= 0)
             row.SetError(_localization.ErrorQuantityPositive);
-        else if (row.Length + material.CutWidth > material.StandardLength)
+        else if (!LengthScale.Fits(row.Length, material.CutWidth, material.StandardLength))
             row.SetError(_localization.ErrorPartDoesNotFit);
         else
             row.ClearError();
+        if (row.HasError && !string.IsNullOrEmpty(row.PasteSource))
+            row.SetError($"{row.Error} [{row.PasteSource}]");
     }
 
     private bool CanCalculate()
     {
         if (IsBusy || ProjectMaterials.Count == 0 || Parts.Count == 0)
             return false;
-        return Parts.All(p => !p.HasError);
+        return !HasInputErrors;
     }
 
     public async Task CalculateAsync()
@@ -698,6 +762,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         try
         {
             var task = CreateProjectTaskSnapshot();
+            var revision = _inputRevision;
             var options = new CuttingOptions
             {
                 TimeLimitSeconds = ExactTimeLimitSeconds,
@@ -712,6 +777,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 : StatusBestFound;
             CurrentResultStatusDetails = BuildBestFoundDetails(result);
             SetCurrentResult(task, result);
+            if (revision != _inputRevision)
+                IsCurrentResultStale = true;
         }
         catch (OperationCanceledException)
         {
@@ -748,6 +815,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void MarkCurrentResultStale()
     {
+        _inputRevision++;
         if (CurrentResult == null || IsCurrentResultStale)
             return;
 
@@ -820,14 +888,21 @@ public sealed class MainViewModel : INotifyPropertyChanged
         var task = CurrentTask!;
         var result = CurrentResult!;
         var outputFolder = ReportOutputPath;
+        var previousStatus = StatusText;
         IsBusy = true;
         StatusText = _localization.StatusGeneratingReport;
         try
         {
-            var fileName = $"{AppConstants.ReportFileNamePrefix}{DateTime.Now.ToString(AppConstants.ReportTimestampFormat)}{AppConstants.ReportFileExtension}";
+            var options = new ReportGenerationOptions(_reportSettings with { }, DateTime.Now, _localization.Culture);
+            var fileName = ReportFileNameFormatter.Format(options.Settings, options.GeneratedAt);
             var outputPath = Path.Combine(outputFolder, fileName);
+            if (File.Exists(outputPath) && !_confirmReportOverwrite(outputPath))
+            {
+                StatusText = previousStatus;
+                return;
+            }
             Directory.CreateDirectory(outputFolder);
-            await Task.Run(() => _reportService!.GenerateReport(outputPath, task, result));
+            await Task.Run(() => _reportService!.GenerateReport(outputPath, task, result, options));
             LastReportPath = outputPath;
             StatusText = string.Format(_localization.StatusReportSaved, outputPath);
         }
@@ -870,8 +945,34 @@ public sealed class MainViewModel : INotifyPropertyChanged
             ReportOutputPath = dialog.SelectedPath;
     }
 
+    private void OpenReportSettings()
+    {
+        var viewModel = new ReportSettingsViewModel(_reportSettings, CurrentResult);
+        var dialog = new Views.ReportSettingsWindow(viewModel) { Owner = Application.Current.MainWindow };
+        if (dialog.ShowDialog() == true)
+            ApplyReportSettings(viewModel.ToSettings());
+    }
+
+    private void OpenCalculationSettings()
+    {
+        var viewModel = new CalculationSettingsViewModel(SelectedExactProfileKey, ExactTimeLimitSeconds, ExactMaxPatternCount);
+        var dialog = new Views.CalculationSettingsWindow(viewModel) { Owner = Application.Current.MainWindow };
+        if (dialog.ShowDialog() != true)
+            return;
+        SelectedExactProfileKey = "custom";
+        ExactTimeLimitSeconds = viewModel.ExactTimeLimitSeconds;
+        ExactMaxPatternCount = viewModel.ExactMaxPatternCount;
+        SelectedExactProfileKey = viewModel.SelectedExactProfileKey;
+    }
+
     private void OpenMaterials()
     {
+        if (_libraryLoadFailed)
+        {
+            LoadLibrary();
+            if (_libraryLoadFailed)
+                return;
+        }
         var dialog = new Views.MaterialsWindow(LibraryMaterials)
         {
             Owner = Application.Current.MainWindow
@@ -908,7 +1009,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private bool CanSaveProject()
     {
-        return _projectFileService != null && Parts.Count > 0 && ProjectMaterials.Count > 0;
+        return _projectFileService != null && Parts.Count > 0 && ProjectMaterials.Count > 0 && Parts.All(row => !row.HasError);
     }
 
     private void SaveProject()
@@ -949,13 +1050,30 @@ public sealed class MainViewModel : INotifyPropertyChanged
         if (dialog.ShowDialog() != true)
             return;
 
-        var data = _projectFileService.Load(dialog.FileName);
-        LoadProject(data);
-        StatusText = string.Format(_localization.StatusProjectLoaded, dialog.FileName);
+        TryOpenProject(dialog.FileName);
+    }
+
+    public bool TryOpenProject(string path)
+    {
+        if (_projectFileService == null)
+            return false;
+        try
+        {
+            var data = _projectFileService.Load(path);
+            LoadProject(data);
+            StatusText = string.Format(_localization.StatusProjectLoaded, path);
+            return true;
+        }
+        catch (Exception ex) when (IsFileError(ex))
+        {
+            StatusText = string.Format(_localization.ErrorFileAction, path, ex.Message);
+            return false;
+        }
     }
 
     private void LoadProject(ProjectData data)
     {
+        ProjectFileService.Validate(data);
         ProjectMaterials.Clear();
         foreach (var material in data.Materials)
             ProjectMaterials.Add(CloneMaterial(material));
@@ -1046,7 +1164,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             if (first.MaterialId != second.MaterialId ||
                 first.Name != second.Name ||
                 first.Length != second.Length ||
-                first.Quantity != second.Quantity)
+                first.Quantity != second.Quantity ||
+                first.PasteSource != second.PasteSource)
                 return false;
         }
 
@@ -1060,7 +1179,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             MaterialId = row.MaterialId,
             Name = row.Name,
             Length = row.Length,
-            Quantity = row.Quantity
+            Quantity = row.Quantity,
+            PasteSource = row.PasteSource
         };
 
     private void RaiseUndoCanExecuteChanged()
@@ -1084,6 +1204,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
         SaveSettings();
     }
 
+    private static bool IsFileError(Exception exception)
+        => exception is IOException or InvalidDataException or UnauthorizedAccessException or System.Text.Json.JsonException;
+
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        if (propertyName == nameof(AvailableLibraryMaterials))
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasAvailableLibraryMaterials)));
+    }
 }

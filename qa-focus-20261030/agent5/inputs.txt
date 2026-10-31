@@ -1,0 +1,57 @@
+QA5 input corpus (exact bytes; \t = TAB 0x09, \r\n = CRLF, \n = LF, \r = CR)
+Process cultures tested: en-US, ru-RU, uk-UA, de-DE (CultureInfo.CurrentCulture/CurrentUICulture)
+App localization culture untouched (LocalizationService is a separate string table, not used by parser).
+Parser: NStLine.App.Services.PartPasteParser.TryParse (real DLL, Release 1.1.0, HEAD 9408582 + uncommitted).
+Row-split replication of MainViewModel.PasteFromClipboard (MainViewModel.cs:651-670):
+  lines = text.Split({"\r\n","\n","\r"}, RemoveEmptyEntries)
+  cells = line.Split('\t').Select(c => c.Trim())
+  ok -> PartRow {Name or "Part N", Length, Math.Max(1,quantity)}; fail -> line silently skipped.
+
+P01  "1250"
+P02  "1250\t4"
+P03  "Стойка\t1250"
+P04  "Стойка\t1250\t10"
+P05  "1250\t4.5"
+P05b "1250\t2.4"
+P05c "Стойка\t1250\t4.5"
+P06  "1200\t0"
+P07  "1200\t-3"
+P07b "Стойка\t1200\t-3"
+P08  "2400\t6000"
+P09  "Стойка\t1250\t10\tEXTRA"
+P10  "Стойка\t1250\t"          (trailing TAB, empty qty cell)
+P11  "\t1250\t5"               (empty name cell)
+P12  "1250\r\n\r\n\t\r\n800\t2\n\n"
+P13  "Стойка\tabc\t3"
+P14  "Стойка\t1250,5\t3"
+P15  "Стойка\t1250.5\t3"
+P16  "Стойка\t1.250\t2"
+P17  "Стойка\t1 250\t2"        (regular space as group separator)
+P18  "Стойка\t1 250\t2"     (NBSP U+00A0 group separator)
+P19  "1e3\t2"
+P20  "-500\t2"
+P21  "0\t2"
+P22  "500\t99999999999"
+P23  "NaN\t2"
+P24  "Infinity\t2"
+P25  "﻿1250\t2\r\n800\t1"  (BOM U+FEFF prefix on first cell)
+P26  "Стойка 1250 5"           (space-separated, not tab)
+P27  "1234\t1250"
+P28  "1250\tСтойка"
+P29  "Стойка\t1250 мм\t3"
+P30  "Стойка"
+P31  "A\t100\t1\r\nB\tbad\t2\r\nC\t200\t2\r\nD\t-50\t1\r\nE\t300"
+P32  "A\t100\t1\r\nA\t100\t1"
+P33  "A\t100\t1\rB\t200\t2\nC\t300\t3\r\n"
+P34  "500\t+3"
+P35  "0x100\t2"
+P36  "500\tthree"
+P37  "Деталь 12а\t400\t2"
+P38  "6000\t1"
+P39  "A100\t2"
+P40  "500\t3,5"
+
+VM manual-entry checks (real MainViewModel, fakes injected, no App.OnStartup, no clipboard):
+AddRowCommand -> setters -> ValidateRow messages; ReplaceQuantityFromKeyboard(0/7);
+double TypeConverter (what DataGrid Length binding does) for "1250,5"/"1250.5"/"1 250"/"abc"/"1e3" @en-US and @ru-RU.
+Material used: Id=m1, StandardLength=6000, CutWidth=3.
